@@ -1,0 +1,36 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.aastream.app-mergeDebugResources-20:/values-night-v8/values-night-v8.xml",
+            "map": [
+                {
+                    "source": "/home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/res/values-night-v8/values-night-v8.xml",
+                    "from": {
+                        "startLines": "2,3,4,5",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,104,154,202",
+                        "endColumns": "48,49,47,50",
+                        "endOffsets": "99,149,197,248"
+                    }
+                },
+                {
+                    "source": "/home/x86debug/.gradle/caches/8.14/transforms/0af425e38918baa7932d3853d9f43eba/transformed/appcompat-1.6.1/res/values-night-v8/values-night-v8.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,125,209,293,389,491,593,687",
+                        "endColumns": "69,83,83,95,101,101,93,88",
+                        "endOffsets": "120,204,288,384,486,588,682,771"
+                    },
+                    "to": {
+                        "startLines": "6,7,8,9,10,11,12,13",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "253,323,407,491,587,689,791,885",
+                        "endColumns": "69,83,83,95,101,101,93,88",
+                        "endOffsets": "318,402,486,582,684,786,880,969"
+                    }
+                }
+            ]
+        }
+    ]
+}

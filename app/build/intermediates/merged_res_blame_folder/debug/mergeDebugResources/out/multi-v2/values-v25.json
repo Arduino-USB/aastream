@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.aastream.app-mergeDebugResources-20:/values-v25/values-v25.xml",
+            "map": [
+                {
+                    "source": "/home/x86debug/.gradle/caches/8.14/transforms/0af425e38918baa7932d3853d9f43eba/transformed/appcompat-1.6.1/res/values-v25/values-v25.xml",
+                    "from": {
+                        "startLines": "2,3,4,6",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,126,209,308",
+                        "endLines": "2,3,5,7",
+                        "endColumns": "70,82,12,12",
+                        "endOffsets": "121,204,303,414"
+                    }
+                }
+            ]
+        }
+    ]
+}

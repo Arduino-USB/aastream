@@ -1,0 +1,35 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.aastream'
+
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.aastream"
+
+        minSdk 21
+        targetSdk 36
+
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+	implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation "androidx.car.app:app:1.4.0"
+}

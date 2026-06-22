@@ -1,0 +1,6 @@
+R_DEF: Internal format may change without notice
+local
+layout activity_main
+string app_name
+style Theme.AAStream
+xml automotive_app_desc

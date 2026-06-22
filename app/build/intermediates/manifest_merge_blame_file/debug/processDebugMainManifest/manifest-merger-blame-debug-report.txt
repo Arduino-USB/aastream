@@ -1,0 +1,141 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.aastream"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="21"
+9        android:targetSdkVersion="36" />
+10
+11    <uses-permission android:name="androidx.car.app.NAVIGATION_TEMPLATES" />
+11-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:4:5-77
+11-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:4:22-74
+12    <uses-permission android:name="androidx.car.app.ACCESS_SURFACE" />
+12-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:5:5-71
+12-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:5:22-68
+13
+14    <queries>
+14-->[androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:23:5-28:15
+15        <provider
+15-->[androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:24:9-27:43
+16            android:name="androidx.car.app.connection.provider"
+16-->[androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:25:13-64
+17            android:authorities="androidx.car.app.connection" />
+17-->[androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:26:13-62
+18    </queries>
+19
+20    <permission
+20-->[androidx.core:core:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/5373c1d8f553da7fd300b4d6c5dd4f3f/transformed/core-1.9.0/AndroidManifest.xml:22:5-24:47
+21        android:name="com.aastream.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+21-->[androidx.core:core:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/5373c1d8f553da7fd300b4d6c5dd4f3f/transformed/core-1.9.0/AndroidManifest.xml:23:9-81
+22        android:protectionLevel="signature" />
+22-->[androidx.core:core:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/5373c1d8f553da7fd300b4d6c5dd4f3f/transformed/core-1.9.0/AndroidManifest.xml:24:9-44
+23
+24    <uses-permission android:name="com.aastream.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+24-->[androidx.core:core:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/5373c1d8f553da7fd300b4d6c5dd4f3f/transformed/core-1.9.0/AndroidManifest.xml:26:5-97
+24-->[androidx.core:core:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/5373c1d8f553da7fd300b4d6c5dd4f3f/transformed/core-1.9.0/AndroidManifest.xml:26:22-94
+25
+26    <application
+26-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:7:5-39:19
+27        android:allowBackup="true"
+27-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:8:9-35
+28        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+28-->[androidx.core:core:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/5373c1d8f553da7fd300b4d6c5dd4f3f/transformed/core-1.9.0/AndroidManifest.xml:28:18-86
+29        android:debuggable="true"
+30        android:extractNativeLibs="true"
+31        android:icon="@android:drawable/sym_def_app_icon"
+31-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:10:9-58
+32        android:label="AAStream"
+32-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:9:9-33
+33        android:theme="@android:style/Theme.DeviceDefault" >
+33-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:11:9-59
+34        <meta-data
+34-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:13:9-15:59
+35            android:name="com.google.android.gms.car.application"
+35-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:14:13-66
+36            android:resource="@xml/automotive_app_desc" />
+36-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:15:13-56
+37        <meta-data
+37-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:17:9-19:33
+38            android:name="androidx.car.app.minCarApiLevel"
+38-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:18:13-59
+39            android:value="1" />
+39-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:19:13-30
+40
+41        <activity
+41-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:21:9-28:20
+42            android:name="com.aastream.MainActivity"
+42-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:22:13-41
+43            android:exported="true" >
+43-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:23:13-36
+44            <intent-filter>
+44-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:24:13-27:29
+45                <action android:name="android.intent.action.MAIN" />
+45-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:25:17-69
+45-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:25:25-66
+46
+47                <category android:name="android.intent.category.LAUNCHER" />
+47-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:26:17-77
+47-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:26:27-74
+48            </intent-filter>
+49        </activity>
+50
+51        <service
+51-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:30:9-37:19
+52            android:name="com.aastream.car.EntryPoint"
+52-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:31:13-55
+53            android:exported="true" >
+53-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:32:13-36
+54            <intent-filter>
+54-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:33:13-36:29
+55                <action android:name="androidx.car.app.CarAppService" />
+55-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:34:17-73
+55-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:34:25-70
+56
+57                <category android:name="androidx.car.app.category.NAVIGATION" />
+57-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:35:17-80
+57-->/home/x86debug/AAStream/app/src/main/AndroidManifest.xml:35:27-78
+58            </intent-filter>
+59        </service>
+60
+61        <activity
+61-->[androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:31:9-34:75
+62            android:name="androidx.car.app.CarAppPermissionActivity"
+62-->[androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:32:13-69
+63            android:exported="false"
+63-->[androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:33:13-37
+64            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+64-->[androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:34:13-72
+65
+66        <receiver
+66-->[androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:36:9-38:40
+67            android:name="androidx.car.app.notification.CarAppNotificationBroadcastReceiver"
+67-->[androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:37:13-93
+68            android:exported="false" />
+68-->[androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:38:13-37
+69
+70        <provider
+70-->[androidx.emoji2:emoji2:1.2.0] /home/x86debug/.gradle/caches/8.14/transforms/880be02a3577786cfa4427bcf52b6143/transformed/emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
+71            android:name="androidx.startup.InitializationProvider"
+71-->[androidx.emoji2:emoji2:1.2.0] /home/x86debug/.gradle/caches/8.14/transforms/880be02a3577786cfa4427bcf52b6143/transformed/emoji2-1.2.0/AndroidManifest.xml:25:13-67
+72            android:authorities="com.aastream.androidx-startup"
+72-->[androidx.emoji2:emoji2:1.2.0] /home/x86debug/.gradle/caches/8.14/transforms/880be02a3577786cfa4427bcf52b6143/transformed/emoji2-1.2.0/AndroidManifest.xml:26:13-68
+73            android:exported="false" >
+73-->[androidx.emoji2:emoji2:1.2.0] /home/x86debug/.gradle/caches/8.14/transforms/880be02a3577786cfa4427bcf52b6143/transformed/emoji2-1.2.0/AndroidManifest.xml:27:13-37
+74            <meta-data
+74-->[androidx.emoji2:emoji2:1.2.0] /home/x86debug/.gradle/caches/8.14/transforms/880be02a3577786cfa4427bcf52b6143/transformed/emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
+75                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+75-->[androidx.emoji2:emoji2:1.2.0] /home/x86debug/.gradle/caches/8.14/transforms/880be02a3577786cfa4427bcf52b6143/transformed/emoji2-1.2.0/AndroidManifest.xml:30:17-75
+76                android:value="androidx.startup" />
+76-->[androidx.emoji2:emoji2:1.2.0] /home/x86debug/.gradle/caches/8.14/transforms/880be02a3577786cfa4427bcf52b6143/transformed/emoji2-1.2.0/AndroidManifest.xml:31:17-49
+77            <meta-data
+77-->[androidx.lifecycle:lifecycle-process:2.4.1] /home/x86debug/.gradle/caches/8.14/transforms/25dafa88226f205e736010f396ff90ab/transformed/lifecycle-process-2.4.1/AndroidManifest.xml:31:13-33:52
+78                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+78-->[androidx.lifecycle:lifecycle-process:2.4.1] /home/x86debug/.gradle/caches/8.14/transforms/25dafa88226f205e736010f396ff90ab/transformed/lifecycle-process-2.4.1/AndroidManifest.xml:32:17-78
+79                android:value="androidx.startup" />
+79-->[androidx.lifecycle:lifecycle-process:2.4.1] /home/x86debug/.gradle/caches/8.14/transforms/25dafa88226f205e736010f396ff90ab/transformed/lifecycle-process-2.4.1/AndroidManifest.xml:33:17-49
+80        </provider>
+81    </application>
+82
+83</manifest>
