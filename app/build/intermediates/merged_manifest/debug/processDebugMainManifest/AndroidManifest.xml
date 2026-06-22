@@ -12,6 +12,7 @@
     <uses-permission android:name="androidx.car.app.ACCESS_SURFACE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <queries>
         <provider
@@ -32,6 +33,7 @@
         android:extractNativeLibs="true"
         android:icon="@android:drawable/sym_def_app_icon"
         android:label="AAStream"
+        android:process=":main"
         android:theme="@android:style/Theme.DeviceDefault" >
         <meta-data
             android:name="com.google.android.gms.car.application"
@@ -42,7 +44,8 @@
 
         <activity
             android:name="com.aastream.MainActivity"
-            android:exported="true" >
+            android:exported="true"
+            android:process=":main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -52,7 +55,8 @@
 
         <service
             android:name="com.aastream.car.EntryPoint"
-            android:exported="true" >
+            android:exported="true"
+            android:process=":main" >
             <intent-filter>
                 <action android:name="androidx.car.app.CarAppService" />
 
@@ -62,7 +66,8 @@
         <service
             android:name="com.aastream.ScreenCaptureService"
             android:exported="false"
-            android:foregroundServiceType="mediaProjection" />
+            android:foregroundServiceType="mediaProjection"
+            android:process=":main" />
 
         <activity
             android:name="androidx.car.app.CarAppPermissionActivity"
