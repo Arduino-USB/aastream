@@ -762,6 +762,7 @@ id radio
 id right_icon
 id right_side
 id screen
+id screen_cast
 id scrollIndicatorDown
 id scrollIndicatorUp
 id scrollView
@@ -786,6 +787,7 @@ id split_action_bar
 id src_atop
 id src_in
 id src_over
+id start_stream
 id status_bar_latest_event_content
 id submenuarrow
 id submit_area
@@ -807,6 +809,7 @@ id text
 id text2
 id textSpacerNoButtons
 id textSpacerNoTitle
+id textView
 id time
 id title
 id titleDividerNoCustom
@@ -841,6 +844,7 @@ interpolator btn_checkbox_unchecked_mtrl_animation_interpolator_1
 interpolator btn_radio_to_off_mtrl_animation_interpolator_0
 interpolator btn_radio_to_on_mtrl_animation_interpolator_0
 interpolator fast_out_slow_in
+layout aascreen_layout
 layout abc_action_bar_title_item
 layout abc_action_bar_up_container
 layout abc_action_menu_item_layout

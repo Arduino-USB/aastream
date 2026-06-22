@@ -3,6 +3,8 @@
 
     <uses-permission android:name="androidx.car.app.NAVIGATION_TEMPLATES" />
     <uses-permission android:name="androidx.car.app.ACCESS_SURFACE" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
 
     <application
         android:allowBackup="true"
@@ -35,6 +37,11 @@
                 <category android:name="androidx.car.app.category.NAVIGATION"/>
             </intent-filter>
         </service>
-
+		
+		<service
+		    android:name=".ScreenCaptureService"
+		    android:exported="false"
+		    android:foregroundServiceType="mediaProjection" />
+		
     </application>
 </manifest>

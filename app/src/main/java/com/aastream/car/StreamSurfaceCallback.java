@@ -21,6 +21,7 @@ public class StreamSurfaceCallback implements SurfaceCallback {
 		new DisplayMgr(context);
     }
 
+
     @Override
     public void onSurfaceAvailable(@NonNull SurfaceContainer surfaceContainer) {
         // 1. Initialize the VirtualDisplay only if it doesn't exist yet

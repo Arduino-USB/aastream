@@ -1,5 +1,9 @@
 R_DEF: Internal format may change without notice
 local
+id screen_cast
+id start_stream
+id textView
+layout aascreen_layout
 layout activity_main
 string app_name
 style Theme.AAStream

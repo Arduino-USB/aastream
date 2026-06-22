@@ -8,15 +8,18 @@ import android.os.Handler;
 import android.os.Looper;
 import android.widget.TextView; // Added missing import
 import android.graphics.Color;    // Added missing import
+import android.view.View;
 
 import android.util.Log;
+import com.aastream.R;
 
+import com.aastream.ScreenBridge;
 public class DisplayMgr {
     
     private static VirtualDisplay display = null;
     private static Presentation presentation = null; // Declared presentation static field
     private static final String TAG = "DisplayMgr";
-
+	private static TextView text_view = null;
     public DisplayMgr(Context context) {
         new Thread(() -> {
             while(true) {    
@@ -28,38 +31,43 @@ public class DisplayMgr {
                     Log.d(TAG, "[DisplayMgr] Display created");
                     
                     // Pass the constructor's context into the main thread runner
-                    new Handler(Looper.getMainLooper()).post(() -> pres(context));
+                    new Handler(Looper.getMainLooper()).post(() -> manage_screen(context));
                     break;                
                 }
 				Log.d(TAG, "[DisplayMgr] Not created yet");
             }
         }).start();
     }
-
+	
+	public static void trigger(boolean state){
+		if (state) {
+			if (text_view != null){
+				text_view.setVisibility(View.GONE);
+			}
+			
+			
+			
+		} else {
+			if (text_view != null){
+				text_view.setVisibility(View.VISIBLE);
+			}
+		}		
+	}
+		
+	
+	
     // Accept context as a parameter here so the UI can use it
-	private static void pres(Context context) {
+	private static void manage_screen(Context context) {
 		// 1. Instantiate the presentation first
 		presentation = new Presentation(context, display.getDisplay());    
 
 		// 2. USE THE PRESENTATION'S CONTEXT for rendering the UI elements!
 		Context presentationContext = presentation.getContext();
-		TextView textView = new TextView(presentationContext);
+		text_view = new TextView(presentationContext);
 		
-		textView.setText("can i do whatever here? Yes!");
-		textView.setTextSize(24);
-		textView.setTextColor(Color.WHITE);
-		textView.setBackgroundColor(Color.BLUE);
-		
-		// 3. FORCE it to occupy the full screen real estate of the VirtualDisplay
-		textView.setGravity(android.view.Gravity.CENTER); // Center the text beautifully
-		android.view.ViewGroup.LayoutParams params = new android.view.ViewGroup.LayoutParams(
-		        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-		        android.view.ViewGroup.LayoutParams.MATCH_PARENT
-		);
-		textView.setLayoutParams(params);
+		presentation.setContentView(R.layout.aascreen_layout);
+		text_view = presentation.findViewById(R.id.textView);
 
-		// Attach and display
-		presentation.setContentView(textView);
 		presentation.show(); 
 	}
 
