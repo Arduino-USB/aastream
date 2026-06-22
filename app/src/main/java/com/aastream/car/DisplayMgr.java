@@ -6,77 +6,96 @@ import android.content.Context;
 import android.app.Presentation;
 import android.os.Handler;
 import android.os.Looper;
-import android.widget.TextView; // Added missing import
-import android.graphics.Color;    // Added missing import
+import android.widget.TextView;
+import android.view.TextureView;
+import android.graphics.SurfaceTexture;
 import android.view.View;
-
 import android.util.Log;
 import com.aastream.R;
-
 import com.aastream.ScreenBridge;
+import com.aastream.ScreenCaptureService;
+
 public class DisplayMgr {
     
-    private static VirtualDisplay display = null;
-    private static Presentation presentation = null; // Declared presentation static field
+    public static VirtualDisplay display = null;
+    private static Presentation presentation = null; 
     private static final String TAG = "DisplayMgr";
-	private static TextView text_view = null;
+    private static TextView text_view = null;
+    private static TextureView texture_view = null;
+
     public DisplayMgr(Context context) {
         new Thread(() -> {
             while(true) {    
-                try {Thread.sleep(500);} catch (Exception e) {
+                try {
+                    Thread.sleep(500);
+                } catch (Exception e) {
                     Log.e(TAG, "[DisplayMgr] Something went wrong sleeping", e);
                 }
                 
                 if (display != null) {
                     Log.d(TAG, "[DisplayMgr] Display created");
-                    
-                    // Pass the constructor's context into the main thread runner
                     new Handler(Looper.getMainLooper()).post(() -> manage_screen(context));
                     break;                
                 }
-				Log.d(TAG, "[DisplayMgr] Not created yet");
+                Log.d(TAG, "[DisplayMgr] Not created yet");
             }
         }).start();
     }
 	
-	public static void trigger(boolean state){
-		if (state) {
-			if (text_view != null){
-				text_view.setVisibility(View.GONE);
-			}
-			
-			
-			
-		} else {
-			if (text_view != null){
-				text_view.setVisibility(View.VISIBLE);
-			}
-		}		
-	}
+    public static void trigger(boolean state){
+        new Handler(Looper.getMainLooper()).post(() -> {
+            if (state) {
+                if (text_view != null) text_view.setVisibility(View.GONE);
+                if (texture_view != null) texture_view.setVisibility(View.VISIBLE);
+            } else {
+                if (text_view != null) text_view.setVisibility(View.VISIBLE);
+                if (texture_view != null) texture_view.setVisibility(View.GONE);
+            }
+        });
+    }
 		
-	
-	
-    // Accept context as a parameter here so the UI can use it
-	private static void manage_screen(Context context) {
-		// 1. Instantiate the presentation first
-		presentation = new Presentation(context, display.getDisplay());    
+    private static void manage_screen(Context context) {
+        presentation = new Presentation(context, display.getDisplay());    
 
-		// 2. USE THE PRESENTATION'S CONTEXT for rendering the UI elements!
-		Context presentationContext = presentation.getContext();
-		text_view = new TextView(presentationContext);
-		
-		presentation.setContentView(R.layout.aascreen_layout);
-		text_view = presentation.findViewById(R.id.textView);
+        presentation.setContentView(R.layout.aascreen_layout);
+        text_view = presentation.findViewById(R.id.text_view);
+        texture_view = presentation.findViewById(R.id.screen_cast);
 
-		presentation.show(); 
-	}
+        texture_view.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+            @Override
+            public void onSurfaceTextureAvailable(SurfaceTexture st, int w, int h) {
+                ScreenBridge.surface = new Surface(st);
+                ScreenBridge.width = w;
+                ScreenBridge.height = h;
 
-    public static void create_display(VirtualDisplay incomingDisplay) {
-        DisplayMgr.display = incomingDisplay; // Fixed 'this' compilation error
+                ScreenCaptureService.attach_if_ready();
+            }
+
+            @Override public void onSurfaceTextureSizeChanged(SurfaceTexture st, int w, int h) {}
+
+            @Override
+            public boolean onSurfaceTextureDestroyed(SurfaceTexture st) {
+                ScreenBridge.surface = null;
+                DisplayMgr.trigger(false);
+                return true;
+            }
+
+            @Override public void onSurfaceTextureUpdated(SurfaceTexture st) {}
+        });
+
+        presentation.show(); 
+        
+        if (ScreenBridge.service != null) {
+            ScreenCaptureService.attach_if_ready();
+        }
+    }
+
+    public static void create_display(VirtualDisplay incoming_display) {
+        DisplayMgr.display = incoming_display; 
     }
     
     public static boolean display_created(){
-        return display != null; // Simpler syntax doing exactly what your if block did
+        return display != null; 
     }
         
     public static void apply_surface(Surface surface) {

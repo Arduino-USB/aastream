@@ -1,8 +1,8 @@
 R_DEF: Internal format may change without notice
 local
+id btn_toggle_stream
 id screen_cast
-id start_stream
-id textView
+id text_view
 layout aascreen_layout
 layout activity_main
 string app_name

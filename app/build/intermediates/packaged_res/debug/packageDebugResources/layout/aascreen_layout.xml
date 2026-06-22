@@ -10,7 +10,7 @@
         android:visibility="gone" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/text_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:text="Open the app on your phone and start casting your screen"

@@ -1,18 +1,14 @@
 [
     {
-        "merged": "/home/x86debug/.gradle/daemon/8.14/com.aastream.app-debug-22:/layout_aascreen_layout.xml.flat",
-        "source": "/home/x86debug/.gradle/daemon/8.14/com.aastream.app-main-24:/layout/aascreen_layout.xml"
+        "merged": "com.aastream.app-debug-22:/xml_automotive_app_desc.xml.flat",
+        "source": "com.aastream.app-main-24:/xml/automotive_app_desc.xml"
+    },
+    {
+        "merged": "com.aastream.app-debug-22:/layout_aascreen_layout.xml.flat",
+        "source": "com.aastream.app-main-24:/layout/aascreen_layout.xml"
     },
     {
         "merged": "com.aastream.app-debug-22:/layout_activity_main.xml.flat",
         "source": "com.aastream.app-main-24:/layout/activity_main.xml"
-    },
-    {
-        "merged": "/home/x86debug/.gradle/daemon/8.14/com.aastream.app-debug-22:/xml_automotive_app_desc.xml.flat",
-        "source": "/home/x86debug/.gradle/daemon/8.14/com.aastream.app-main-24:/xml/automotive_app_desc.xml"
-    },
-    {
-        "merged": "/home/x86debug/.gradle/daemon/8.14/com.aastream.app-debug-22:/layout_activity_main.xml.flat",
-        "source": "/home/x86debug/.gradle/daemon/8.14/com.aastream.app-main-24:/layout/activity_main.xml"
     }
 ]

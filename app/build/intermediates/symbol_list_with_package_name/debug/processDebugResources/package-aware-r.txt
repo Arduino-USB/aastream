@@ -707,6 +707,7 @@ id async
 id beginning
 id blocking
 id bottom
+id btn_toggle_stream
 id buttonPanel
 id cancel_action
 id center_vertical
@@ -787,7 +788,6 @@ id split_action_bar
 id src_atop
 id src_in
 id src_over
-id start_stream
 id status_bar_latest_event_content
 id submenuarrow
 id submit_area
@@ -809,7 +809,7 @@ id text
 id text2
 id textSpacerNoButtons
 id textSpacerNoTitle
-id textView
+id text_view
 id time
 id title
 id titleDividerNoCustom
