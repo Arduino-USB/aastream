@@ -12,13 +12,27 @@
     <uses-permission android:name="androidx.car.app.ACCESS_SURFACE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission
+        android:name="android.permission.NEARBY_WIFI_DEVICES"
+        android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
 
     <queries>
         <provider
             android:name="androidx.car.app.connection.provider"
             android:authorities="androidx.car.app.connection" />
     </queries>
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <permission
         android:name="com.aastream.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
@@ -33,7 +47,6 @@
         android:extractNativeLibs="true"
         android:icon="@android:drawable/sym_def_app_icon"
         android:label="AAStream"
-        android:process=":main"
         android:theme="@android:style/Theme.DeviceDefault" >
         <meta-data
             android:name="com.google.android.gms.car.application"
@@ -44,8 +57,8 @@
 
         <activity
             android:name="com.aastream.MainActivity"
-            android:exported="true"
-            android:process=":main" >
+            android:configChanges="orientation|screenSize"
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -54,20 +67,33 @@
         </activity>
 
         <service
+            android:name="com.aastream.OverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse" >
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Intercepts vehicle touch input and dims phone panel backlight to avoid distraction while streaming screens over Android Auto." />
+        </service>
+        <service
             android:name="com.aastream.car.EntryPoint"
-            android:exported="true"
-            android:process=":main" >
+            android:exported="true" >
             <intent-filter>
                 <action android:name="androidx.car.app.CarAppService" />
 
                 <category android:name="androidx.car.app.category.NAVIGATION" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.PICK" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="geo" />
+            </intent-filter>
         </service>
         <service
             android:name="com.aastream.ScreenCaptureService"
             android:exported="false"
-            android:foregroundServiceType="mediaProjection"
-            android:process=":main" />
+            android:foregroundServiceType="mediaProjection" />
 
         <activity
             android:name="androidx.car.app.CarAppPermissionActivity"
