@@ -11,10 +11,14 @@ import android.view.TextureView;
 import android.view.WindowManager;
 import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
-import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.net.Uri;
 import android.view.View;
 import android.util.Log;
+import android.media.MediaCodec;
+import android.media.MediaCodecInfo;
+import android.media.MediaFormat;
+import android.os.Build;
 
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MimeTypes;
@@ -28,6 +32,7 @@ import com.aastream.ScreenBridge;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +41,7 @@ public class DisplayMgr {
     
     public static VirtualDisplay display = null;
     private static Presentation presentation = null; 
-    private static final String TAG = "AANetStream"; 
+    private static final String TAG = "AAStreamDebug"; 
     private static TextView text_view = null;
     private static TextureView texture_view = null;
     private static boolean lastKnownState = false;
@@ -51,9 +56,10 @@ public class DisplayMgr {
     private static final Object socketLock = new Object();
     private static boolean isNetworkStreamingActive = false;
 
-    private static Bitmap frameTransferBitmap = null;
-    private static ReusableByteArrayOutputStream compressionStream = new ReusableByteArrayOutputStream(1024 * 300);
-    private static final byte[] prefixHeader = new byte[4];
+    // Hardware encoder pipeline states
+    private static MediaCodec videoEncoder = null;
+    private static Surface encoderInputSurface = null;
+    private static boolean isCodecRunning = false;
 
     public interface PlayerStateListener {
         void onPlaybackEnded();
@@ -82,8 +88,17 @@ public class DisplayMgr {
         lastKnownState = state;
         new Handler(Looper.getMainLooper()).post(() -> {
             if (text_view != null && texture_view != null && nativePlayerView != null) {
-                texture_view.setVisibility(View.VISIBLE);
                 
+                // FIX: If native video layout is currently supposed to be active, 
+                // do not forcefully overwrite the layer visibility configurations.
+                if (exoPlayer != null && (exoPlayer.getPlaybackState() == Player.STATE_READY || exoPlayer.getPlaybackState() == Player.STATE_BUFFERING)) {
+                    texture_view.setVisibility(View.GONE);
+                    text_view.setVisibility(View.GONE);
+                    nativePlayerView.setVisibility(View.VISIBLE);
+                    return;
+                }
+
+                texture_view.setVisibility(View.VISIBLE);
                 if (state) {
                     text_view.setVisibility(View.GONE);
                     nativePlayerView.setVisibility(View.GONE);
@@ -129,8 +144,6 @@ public class DisplayMgr {
                     ScreenBridge.width = w;
                     ScreenBridge.height = h;
 
-                    // REMOVED: Hijacking st.setOnFrameAvailableListener(...) which broke view rendering.
-
                     if (ScreenBridge.service != null) {
                         ScreenBridge.service.start_display_if_possible(); 
                     }
@@ -148,7 +161,7 @@ public class DisplayMgr {
                 
                 @Override 
                 public void onSurfaceTextureUpdated(SurfaceTexture st) {
-                    // FIX: Safe frame processing intercept hook that does not block rendering pipelines
+                    // FIX: Process frame pipeline intercept hook asynchronously without stalling rendering loop
                     if (isNetworkStreamingActive && processingHandler != null) {
                         processingHandler.post(() -> dispatchFrameAsynchronous());
                     }
@@ -172,46 +185,118 @@ public class DisplayMgr {
                 
                 int targetW = ScreenBridge.width > 0 ? ScreenBridge.width : 1280;
                 int targetH = ScreenBridge.height > 0 ? ScreenBridge.height : 720;
-                frameTransferBitmap = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.ARGB_8888);
                 
+                // Tear down any previous encoder context safely
+                releaseEncoder();
+
+                Log.i(TAG, "Initializing hardware H.264 MediaCodec pipeline at " + targetW + "x" + targetH);
+                MediaFormat format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, targetW, targetH);
+                
+                // Configure low latency real-time streaming constraints
+                format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
+                format.setInteger(MediaFormat.KEY_BIT_RATE, 4000000); // 4 Mbps
+                format.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
+                format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1); // 1 second keyframes
+                
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    format.setInteger(MediaFormat.KEY_LATENCY, 0); // Real-time priority mode
+                }
+
+                videoEncoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC);
+                videoEncoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+                
+                // Generate an input surface to blit frames into directly via GPU VRAM
+                encoderInputSurface = videoEncoder.createInputSurface();
+                videoEncoder.start();
+                isCodecRunning = true;
                 isNetworkStreamingActive = true;
-                Log.i(TAG, "Asynchronous network streaming broadcast pipeline attached securely.");
-            } catch (IOException e) { Log.e(TAG, "Failed network client handshakes", e); }
+
+                // Fire up output drainer thread to transmit bytes instantly
+                startEncoderOutputLoop();
+                
+                Log.i(TAG, "Asynchronous network hardware H.264 streaming broadcast pipeline attached securely.");
+            } catch (IOException e) { Log.e(TAG, "Failed network client handshakes / encoder initialization", e); }
         }
     }
 
     private static void dispatchFrameAsynchronous() {
-        if (texture_view == null || frameTransferBitmap == null) return;
+        if (texture_view == null || encoderInputSurface == null || !isCodecRunning) return;
         
-        synchronized (socketLock) {
-            if (networkOutputStream == null) return;
+        // FIX: TextureView.draw(canvas) MUST be marshalled and executed on the Main Thread (UI Looper). 
+        // Invoking this straight from a background or rendering handler worker causes a cross-thread canvas exception
+        // that corrupts the graphics buffer queue and immediately destroys the MediaProjection token context.
+        new Handler(Looper.getMainLooper()).post(() -> {
             try {
-                texture_view.getBitmap(frameTransferBitmap);
-                
-                compressionStream.reset();
-                frameTransferBitmap.compress(Bitmap.CompressFormat.JPEG, 75, compressionStream);
-                int payloadSize = compressionStream.size();
-                
-                prefixHeader[0] = (byte) (payloadSize >>> 24);
-                prefixHeader[1] = (byte) (payloadSize >>> 16);
-                prefixHeader[2] = (byte) (payloadSize >>> 8);
-                prefixHeader[3] = (byte) payloadSize;
-                
-                networkOutputStream.write(prefixHeader, 0, 4);
-                networkOutputStream.write(compressionStream.getBuf(), 0, payloadSize);
-                networkOutputStream.flush();
+                if (encoderInputSurface != null && isCodecRunning) {
+                    Canvas canvas = null;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        canvas = encoderInputSurface.lockHardwareCanvas();
+                    } else {
+                        canvas = encoderInputSurface.lockCanvas(null);
+                    }
+
+                    if (canvas != null) {
+                        texture_view.draw(canvas);
+                        encoderInputSurface.unlockCanvasAndPost(canvas);
+                    }
+                }
             } catch (Exception e) {
-                Log.e(TAG, "Stream write dropout detected. Cleaning client reference connection parameters.");
-                isNetworkStreamingActive = false;
-                try { networkOutputStream.close(); } catch (Exception ignored) {}
-                networkOutputStream = null;
+                Log.e(TAG, "Hardware canvas blit extraction dropped frame or encountered surface loss", e);
             }
+        });
+    }
+
+    private static void startEncoderOutputLoop() {
+        new Thread(() -> {
+            MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
+            try {
+                while (isNetworkStreamingActive && isCodecRunning) {
+                    int outputBufferIndex = videoEncoder.dequeueOutputBuffer(bufferInfo, 10000); // 10ms timeout
+                    
+                    if (outputBufferIndex >= 0) {
+                        ByteBuffer outputBuffer = videoEncoder.getOutputBuffer(outputBufferIndex);
+                        if (outputBuffer != null && bufferInfo.size > 0) {
+                            synchronized (socketLock) {
+                                if (networkOutputStream != null) {
+                                    byte[] outData = new byte[bufferInfo.size];
+                                    outputBuffer.get(outData);
+                                    
+                                    // Send Annex-B stream units sequentially down raw TCP socket
+                                    networkOutputStream.write(outData, 0, outData.length);
+                                    networkOutputStream.flush();
+                                }
+                            }
+                        }
+                        videoEncoder.releaseOutputBuffer(outputBufferIndex, false);
+                    }
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error inside output pipeline byte writer thread context", e);
+                isNetworkStreamingActive = false;
+            }
+        }, "AAStreamEncoderOutThread").start();
+    }
+
+    private static void releaseEncoder() {
+        isCodecRunning = false;
+        if (videoEncoder != null) {
+            try {
+                videoEncoder.stop();
+                videoEncoder.release();
+            } catch (Exception ignored) {}
+            videoEncoder = null;
+        }
+        if (encoderInputSurface != null) {
+            encoderInputSurface.release();
+            encoderInputSurface = null;
         }
     }
 
     public static void stopAllMediaEngines() {
         new Handler(Looper.getMainLooper()).post(() -> {
             isNetworkStreamingActive = false;
+            releaseEncoder();
+            
             synchronized (socketLock) {
                 if (networkOutputStream != null) {
                     try { networkOutputStream.close(); } catch (Exception ignored) {}
@@ -238,16 +323,11 @@ public class DisplayMgr {
         }
     }
 
-    private static class ReusableByteArrayOutputStream extends java.io.ByteArrayOutputStream {
-        public ReusableByteArrayOutputStream(int size) { super(size); }
-        public byte[] getBuf() { return buf; }
-    }
-
     // ==========================================
     // video stuff
     // ==========================================
 
-    public static void playNativeVideoFile(android.net.Uri uri) {
+    public static void playNativeVideoFile(Uri uri) {
         new Handler(Looper.getMainLooper()).post(() -> {
             if (exoPlayer == null) return;
 
@@ -303,7 +383,7 @@ public class DisplayMgr {
         });
     }
 
-    public static void injectExternalSubtitles(android.net.Uri srtUri) {
+    public static void injectExternalSubtitles(Uri srtUri) {
         new Handler(Looper.getMainLooper()).post(() -> {
             if (exoPlayer == null) return;
 
