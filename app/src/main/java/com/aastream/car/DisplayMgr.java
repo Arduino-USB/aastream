@@ -16,10 +16,13 @@ import android.view.PixelCopy;
 import android.util.Log;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.media.MediaFormat;
 import android.os.Build;
 import android.view.View;
 import android.net.Uri;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MimeTypes;
@@ -172,102 +175,177 @@ public class DisplayMgr {
 
     } catch (Exception e) { Log.e(TAG, "Presentation setup error", e); }
 }
-	public static void handleNetworkClient(Socket clientSocket) {
-		synchronized (socketLock) {
-			try {
-				Log.i(TAG, "[Network] Client established. Launching PixelCopy rendering extraction bridge...");
-				if (networkOutputStream != null) {
-					try { networkOutputStream.close(); } catch (IOException ignored) {}
-				}
-				networkOutputStream = clientSocket.getOutputStream();
-				
-				int target_w = ScreenBridge.width > 0 ? ScreenBridge.width : 800;
-				int target_h = ScreenBridge.height > 0 ? ScreenBridge.height : 400;
-				
-				releaseEncoder();
-	
-				MediaFormat format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, target_w, target_h);
-				format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-				format.setInteger(MediaFormat.KEY_BIT_RATE, 3000000); 
-				format.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
-				format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1); 
-				format.setLong(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER, 1000000 / 30);			
+// Add at class level
+private static MediaCodec createAndConfigureEncoder(int suggestedWidth, int suggestedHeight) {
+    try {
+        // Find the best encoder
+        MediaCodecList codecList = new MediaCodecList(MediaCodecList.REGULAR_CODECS);
+        String encoderName = null;
 
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-					format.setInteger(MediaFormat.KEY_LATENCY, 0);
-					format.setInteger(MediaFormat.KEY_PRIORITY, 0); 
-				}
-	
-				try {
-					videoEncoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC);
-					videoEncoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-					encoderInputSurface = videoEncoder.createInputSurface();
-					videoEncoder.start();
-				} catch (Exception codecException) {
-					Log.e(TAG, "Codec spin up panic failure", codecException);
-					releaseEncoder();
-					return;
-				}
+        for (MediaCodecInfo info : codecList.getCodecInfos()) {
+            if (!info.isEncoder()) continue;
+            for (String type : info.getSupportedTypes()) {
+                if (type.equalsIgnoreCase(MediaFormat.MIMETYPE_VIDEO_AVC)) {
+                    encoderName = info.getName();
+                    Log.i(TAG, "[Encoder] Found AVC encoder: " + encoderName);
+                    break;
+                }
+            }
+            if (encoderName != null) break;
+        }
 
-				isNetworkStreamingActive = true;
-				
-				// Initialize frame worker extraction threads
-				frameCaptureThread = new HandlerThread("AAStreamFrameCapture");
-				frameCaptureThread.start();
-				frameCaptureHandler = new Handler(frameCaptureThread.getLooper());
+        if (encoderName == null) {
+            Log.e(TAG, "[Encoder] No AVC encoder found!");
+            return null;
+        }
 
-				if (cachedSpsPpsHeaders != null) {
-					try {
-						networkOutputStream.write(cachedSpsPpsHeaders, 0, cachedSpsPpsHeaders.length);
-						networkOutputStream.flush();
-					} catch (IOException ignored) {}
-				}
-	
-				startEncoderOutputLoop();
-				// Kickstart asynchronous loop processing
-				frameCaptureHandler.post(new Runnable() {
-				    @Override
-				    public void run() {
-				        if (!isNetworkStreamingActive || presentation == null || presentation.getWindow() == null || encoderInputSurface == null) {
-				            return;
-				        }
-				        
-				        try {
-				            Bitmap bitmap = Bitmap.createBitmap(target_w, target_h, Bitmap.Config.ARGB_8888);
-				            PixelCopy.request(presentation.getWindow(), bitmap, (copyResult) -> {
-				                if (copyResult == PixelCopy.SUCCESS && isNetworkStreamingActive && encoderInputSurface != null) {
-				                    try {
-				                        // FIX: Use standard lockCanvas() instead of lockHardwareCanvas()
-				                        android.graphics.Canvas canvas = encoderInputSurface.lockCanvas(null);
-				                        if (canvas != null) {
-				                            canvas.drawBitmap(bitmap, 0, 0, null);
-				                            encoderInputSurface.unlockCanvasAndPost(canvas);
-				                        }
-				                    } catch (Exception ignored) {
-				                        Log.e(TAG, "Canvas drawing failed", ignored);
-				                    }
-				                }
-				                bitmap.recycle();
-				                
-				                // Schedule next capture frame check (approximates ~30 FPS sync target)
-				                if (isNetworkStreamingActive && frameCaptureHandler != null) {
-				                    frameCaptureHandler.postDelayed(this, 33);
-				                }
-				            }, frameCaptureHandler);
-				        } catch (Exception e) {
-				            if (isNetworkStreamingActive && frameCaptureHandler != null) {
-				                frameCaptureHandler.postDelayed(this, 100);
-				            }
-				        }
-				    }
-				});
-			} catch (IOException e) { 
-				Log.e(TAG, "Network configuration handshake error", e); 
-			}
-		}
-	}
+        MediaCodec encoder = MediaCodec.createByCodecName(encoderName);
+        MediaCodecInfo info = encoder.getCodecInfo();
+        MediaCodecInfo.CodecCapabilities caps = info.getCapabilitiesForType(MediaFormat.MIMETYPE_VIDEO_AVC);
+        MediaCodecInfo.VideoCapabilities videoCaps = caps.getVideoCapabilities();
 
-	private static void startEncoderOutputLoop() {
+        if (videoCaps == null) {
+            Log.e(TAG, "[Encoder] No VideoCapabilities");
+            encoder.release();
+            return null;
+        }
+
+        // Clamp to supported ranges
+        int width = videoCaps.getSupportedWidths().clamp(suggestedWidth);
+        int height = videoCaps.getSupportedHeightsFor(width).clamp(suggestedHeight);
+
+        // Ensure even and minimum alignment
+        width = Math.max(320, (width / 16) * 16);   // many encoders want multiple of 16
+        height = Math.max(240, (height / 16) * 16);
+
+        Log.i(TAG, "[Encoder] Using supported resolution: " + width + "x" + height);
+
+        MediaFormat format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height);
+        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
+        format.setInteger(MediaFormat.KEY_BIT_RATE, Math.max(2000000, width * height * 3)); // higher bitrate often helps
+        format.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
+        format.setLong(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER, 33333); // ~30fps
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            format.setInteger(MediaFormat.KEY_LATENCY, 0);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            format.setInteger(MediaFormat.KEY_LOW_LATENCY, 1);
+        }
+
+        encoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+        encoderInputSurface = encoder.createInputSurface();
+        encoder.start();
+
+        Log.i(TAG, "[Encoder] ✅ Successfully configured using proper capabilities");
+        return encoder;
+
+    } catch (Exception e) {
+        Log.e(TAG, "[Encoder] Failed to configure with capabilities", e);
+        return null;
+    }
+}
+private static void sendBitmapOverNetwork(Bitmap bitmap) {
+    if (bitmap == null || networkOutputStream == null) return;
+    
+    try {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 65, baos);
+        byte[] data = baos.toByteArray();
+        
+        synchronized (socketLock) {
+            if (networkOutputStream != null && isNetworkStreamingActive) {
+                DataOutputStream dos = new DataOutputStream(networkOutputStream);
+                dos.writeInt(data.length);
+                dos.write(data);
+                dos.flush();
+            }
+        }
+    } catch (IOException e) {
+        Log.e(TAG, "Failed to send bitmap over network", e);
+        isNetworkStreamingActive = false;
+    }
+}
+public static void handleNetworkClient(Socket clientSocket) {
+    synchronized (socketLock) {
+        try {
+            Log.i(TAG, "[Network] Client established. Using raw bitmap streaming (no encoder)...");
+            
+            if (networkOutputStream != null) {
+                try { networkOutputStream.close(); } catch (IOException ignored) {}
+            }
+            networkOutputStream = clientSocket.getOutputStream();
+            
+            isNetworkStreamingActive = true;
+            
+            // Setup frame capture thread
+            frameCaptureThread = new HandlerThread("AAStreamBitmapCapture", 
+                    android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
+            frameCaptureThread.start();
+            frameCaptureHandler = new Handler(frameCaptureThread.getLooper());
+
+            // Start sending bitmaps
+            frameCaptureHandler.post(new Runnable() {
+                private int frameCount = 0;
+
+                @Override
+                public void run() {
+                    if (!isNetworkStreamingActive || presentation == null || 
+                        presentation.getWindow() == null) {
+                        return;
+                    }
+
+                    frameCount++;
+                    if (frameCount % 30 == 0) {
+                        Log.i(TAG, "[Bitmap] Sending frame #" + frameCount);
+                    }
+
+                    int w = ScreenBridge.width > 0 ? ScreenBridge.width : 800;
+                    int h = ScreenBridge.height > 0 ? ScreenBridge.height : 480;
+
+                    Bitmap bitmap = null;
+                    try {
+                        bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                        
+                        final Bitmap finalBitmap = bitmap;  // Make it effectively final for lambda
+                        
+                        PixelCopy.request(presentation.getWindow(), bitmap, (copyResult) -> {
+                            if (copyResult == PixelCopy.SUCCESS) {
+                                sendBitmapOverNetwork(finalBitmap);
+                            } else {
+                                Log.w(TAG, "PixelCopy failed: " + copyResult);
+                            }
+                            
+                            if (finalBitmap != null) {
+                                finalBitmap.recycle();
+                            }
+
+                            // Schedule next frame
+                            if (isNetworkStreamingActive && frameCaptureHandler != null) {
+                                frameCaptureHandler.postDelayed(this, 50);
+                            }
+                        }, frameCaptureHandler);
+
+                    } catch (Exception e) {
+                        Log.e(TAG, "Bitmap capture error", e);
+                        if (bitmap != null) {
+                            bitmap.recycle();
+                        }
+                        
+                        if (isNetworkStreamingActive && frameCaptureHandler != null) {
+                            frameCaptureHandler.postDelayed(this, 100);
+                        }
+                    }
+                }
+            });
+
+        } catch (IOException e) { 
+            Log.e(TAG, "Network client setup error", e); 
+        }
+    }
+}
+private static void startEncoderOutputLoop() {
 		new Thread(() -> {
 			MediaCodec.BufferInfo buffer_info = new MediaCodec.BufferInfo();
 			try {
