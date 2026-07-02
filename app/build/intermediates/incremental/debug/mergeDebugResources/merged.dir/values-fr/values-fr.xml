@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">Automatique</string>
     <string name="exo_track_selection_none">Aucun</string>
     <string name="exo_track_selection_title_audio">Audio</string>
-    <string name="exo_track_selection_title_text">Texte</string>
-    <string name="exo_track_selection_title_video">Vidéo</string>
     <string name="exo_track_stereo">Stéréo</string>
     <string name="exo_track_surround">Son surround</string>
     <string name="exo_track_surround_5_point_1">Son surround 5.1</string>

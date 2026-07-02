@@ -92,8 +92,6 @@
     <string name="exo_track_selection_auto">Samodejno</string>
     <string name="exo_track_selection_none">Nič</string>
     <string name="exo_track_selection_title_audio">Zvočni posnetki</string>
-    <string name="exo_track_selection_title_text">Podnapisi</string>
-    <string name="exo_track_selection_title_video">Videoposnetki</string>
     <string name="exo_track_stereo">Stereo</string>
     <string name="exo_track_surround">Prostorski zvok</string>
     <string name="exo_track_surround_5_point_1">Prostorski zvok 5.1</string>

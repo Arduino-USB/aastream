@@ -56,16 +56,30 @@
     <attr format="reference" name="controller_layout_id"/>
     <attr format="reference" name="default_artwork"/>
     <attr format="reference" name="drawerArrowStyle"/>
+    <attr format="reference" name="fastforward_icon"/>
+    <attr format="reference" name="fullscreen_enter_icon"/>
+    <attr format="reference" name="fullscreen_exit_icon"/>
     <attr format="dimension" name="height"/>
     <attr format="boolean" name="hide_during_ads"/>
     <attr format="boolean" name="hide_on_touch"/>
+    <attr format="enum" name="image_display_mode">
+    <enum name="fit" value="0"/>
+    <enum name="fill" value="1"/>
+  </attr>
     <attr format="boolean" name="isLightTheme"/>
     <attr format="boolean" name="keep_content_on_player_reset"/>
     <attr format="reference" name="nestedScrollViewStyle"/>
+    <attr format="reference" name="next_icon"/>
+    <attr format="reference" name="pause_icon"/>
+    <attr format="reference" name="play_icon"/>
     <attr format="color" name="played_ad_marker_color"/>
     <attr format="color" name="played_color"/>
     <attr format="reference" name="player_layout_id"/>
+    <attr format="reference" name="previous_icon"/>
     <attr format="reference" name="recyclerViewStyle"/>
+    <attr format="reference" name="repeat_all_icon"/>
+    <attr format="reference" name="repeat_off_icon"/>
+    <attr format="reference" name="repeat_one_icon"/>
     <attr name="repeat_toggle_modes">
     <flag name="none" value="0"/>
     <flag name="one" value="1"/>
@@ -78,6 +92,7 @@
     <enum name="fill" value="3"/>
     <enum name="zoom" value="4"/>
   </attr>
+    <attr format="reference" name="rewind_icon"/>
     <attr format="color" name="scrubber_color"/>
     <attr format="dimension" name="scrubber_disabled_size"/>
     <attr format="dimension" name="scrubber_dragged_size"/>
@@ -96,7 +111,11 @@
     <attr format="boolean" name="show_subtitle_button"/>
     <attr format="integer" name="show_timeout"/>
     <attr format="boolean" name="show_vr_button"/>
+    <attr format="reference" name="shuffle_off_icon"/>
+    <attr format="reference" name="shuffle_on_icon"/>
     <attr format="color" name="shutter_background_color"/>
+    <attr format="reference" name="subtitle_off_icon"/>
+    <attr format="reference" name="subtitle_on_icon"/>
     <attr format="enum" name="surface_type">
     <enum name="none" value="0"/>
     <enum name="surface_view" value="1"/>
@@ -105,11 +124,13 @@
     <enum name="video_decoder_gl_surface_view" value="4"/>
   </attr>
     <attr format="integer" name="time_bar_min_update_interval"/>
+    <attr format="boolean" name="time_bar_scrubbing_enabled"/>
     <attr format="string" name="title"/>
     <attr format="dimension" name="touch_target_height"/>
     <attr format="color" name="unplayed_color"/>
     <attr format="boolean" name="use_artwork"/>
     <attr format="boolean" name="use_controller"/>
+    <attr format="reference" name="vr_icon"/>
     <bool name="abc_action_bar_embed_tabs">true</bool>
     <bool name="abc_config_actionMenuItemAllCaps">true</bool>
     <color name="abc_decor_view_status_guard">#ff000000</color>
@@ -147,7 +168,6 @@
     <color name="exo_black_opacity_70">#B3000000</color>
     <color name="exo_bottom_bar_background">#b0000000</color>
     <color name="exo_edit_mode_background_color">#FFF4F3F0</color>
-    <color name="exo_error_message_background_color">#AA000000</color>
     <color name="exo_styled_error_message_background">#80808080</color>
     <color name="exo_white">#ffffff</color>
     <color name="exo_white_opacity_70">#B3ffffff</color>
@@ -391,6 +411,8 @@
     <drawable name="exo_styled_controls_settings">@drawable/exo_ic_settings</drawable>
     <drawable name="exo_styled_controls_shuffle_off">@drawable/exo_icon_shuffle_off</drawable>
     <drawable name="exo_styled_controls_shuffle_on">@drawable/exo_icon_shuffle_on</drawable>
+    <drawable name="exo_styled_controls_simple_fastforward">@drawable/exo_icon_fastforward</drawable>
+    <drawable name="exo_styled_controls_simple_rewind">@drawable/exo_icon_rewind</drawable>
     <drawable name="exo_styled_controls_speed">@drawable/exo_ic_speed</drawable>
     <drawable name="exo_styled_controls_subtitle_off">@drawable/exo_ic_subtitle_off</drawable>
     <drawable name="exo_styled_controls_subtitle_on">@drawable/exo_ic_subtitle_on</drawable>
@@ -452,6 +474,7 @@
     <item name="exo_ffwd" type="id"/>
     <item name="exo_ffwd_with_amount" type="id"/>
     <item name="exo_fullscreen" type="id"/>
+    <item name="exo_image" type="id"/>
     <item name="exo_minimal_controls" type="id"/>
     <item name="exo_minimal_fullscreen" type="id"/>
     <item name="exo_next" type="id"/>
@@ -606,8 +629,6 @@
     <string name="exo_track_selection_auto">Auto</string>
     <string name="exo_track_selection_none">None</string>
     <string name="exo_track_selection_title_audio">Audio</string>
-    <string name="exo_track_selection_title_text">Text</string>
-    <string name="exo_track_selection_title_video">Video</string>
     <string name="exo_track_stereo">Stereo</string>
     <string name="exo_track_surround">Surround sound</string>
     <string name="exo_track_surround_5_point_1">5.1 surround sound</string>
@@ -3389,16 +3410,33 @@
     <declare-styleable name="PlayerControlView">
     <attr name="show_timeout"/>
     <attr name="repeat_toggle_modes"/>
+    <attr name="repeat_off_icon"/>
+    <attr name="repeat_one_icon"/>
+    <attr name="repeat_all_icon"/>
     <attr name="show_rewind_button"/>
+    <attr name="rewind_icon"/>
     <attr name="show_fastforward_button"/>
+    <attr name="fastforward_icon"/>
     <attr name="show_previous_button"/>
+    <attr name="previous_icon"/>
     <attr name="show_next_button"/>
+    <attr name="next_icon"/>
     <attr name="show_shuffle_button"/>
+    <attr name="shuffle_on_icon"/>
+    <attr name="shuffle_off_icon"/>
     <attr name="show_subtitle_button"/>
+    <attr name="subtitle_on_icon"/>
+    <attr name="subtitle_off_icon"/>
     <attr name="show_vr_button"/>
+    <attr name="vr_icon"/>
+    <attr name="time_bar_scrubbing_enabled"/>
     <attr name="time_bar_min_update_interval"/>
     <attr name="controller_layout_id"/>
     <attr name="animation_enabled"/>
+    <attr name="play_icon"/>
+    <attr name="pause_icon"/>
+    <attr name="fullscreen_exit_icon"/>
+    <attr name="fullscreen_enter_icon"/>
     
     <attr name="bar_height"/>
     <attr name="bar_gravity"/>
@@ -3418,6 +3456,7 @@
     <declare-styleable name="PlayerView">
     <attr name="use_artwork"/>
     <attr name="artwork_display_mode"/>
+    <attr name="image_display_mode"/>
     <attr name="shutter_background_color"/>
     <attr name="default_artwork"/>
     <attr name="use_controller"/>
@@ -3433,12 +3472,29 @@
     
     <attr name="show_timeout"/>
     <attr name="repeat_toggle_modes"/>
+    <attr name="repeat_off_icon"/>
+    <attr name="repeat_one_icon"/>
+    <attr name="repeat_all_icon"/>
     <attr name="show_shuffle_button"/>
+    <attr name="shuffle_off_icon"/>
+    <attr name="shuffle_on_icon"/>
     <attr name="show_subtitle_button"/>
+    <attr name="subtitle_off_icon"/>
+    <attr name="subtitle_on_icon"/>
     <attr name="show_vr_button"/>
+    <attr name="vr_icon"/>
+    <attr name="time_bar_scrubbing_enabled"/>
     <attr name="time_bar_min_update_interval"/>
     <attr name="controller_layout_id"/>
     <attr name="animation_enabled"/>
+    <attr name="play_icon"/>
+    <attr name="pause_icon"/>
+    <attr name="fullscreen_enter_icon"/>
+    <attr name="fullscreen_exit_icon"/>
+    <attr name="next_icon"/>
+    <attr name="previous_icon"/>
+    <attr name="fastforward_icon"/>
+    <attr name="rewind_icon"/>
     
     <attr name="bar_height"/>
     <attr name="bar_gravity"/>

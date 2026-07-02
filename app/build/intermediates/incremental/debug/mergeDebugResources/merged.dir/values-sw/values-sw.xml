@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">Otomatiki</string>
     <string name="exo_track_selection_none">Hamna</string>
     <string name="exo_track_selection_title_audio">Sauti</string>
-    <string name="exo_track_selection_title_text">Maandishi</string>
-    <string name="exo_track_selection_title_video">Video</string>
     <string name="exo_track_stereo">Stereo</string>
     <string name="exo_track_surround">Sauti inayozingira</string>
     <string name="exo_track_surround_5_point_1">Sauti inayozingira ya 5.1</string>

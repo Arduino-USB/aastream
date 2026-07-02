@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">ស្វ័យប្រវត្តិ</string>
     <string name="exo_track_selection_none">គ្មាន</string>
     <string name="exo_track_selection_title_audio">សំឡេង</string>
-    <string name="exo_track_selection_title_text">អក្សរ</string>
-    <string name="exo_track_selection_title_video">វីដេអូ</string>
     <string name="exo_track_stereo">ស្តេរ៉េអូ</string>
     <string name="exo_track_surround">សំឡេង​រងំ</string>
     <string name="exo_track_surround_5_point_1">សំឡេង​រងំ​ខ្នាត 5.1</string>

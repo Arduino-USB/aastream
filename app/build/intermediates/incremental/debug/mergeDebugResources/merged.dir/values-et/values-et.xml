@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">Automaatne</string>
     <string name="exo_track_selection_none">Ühtegi</string>
     <string name="exo_track_selection_title_audio">Heli</string>
-    <string name="exo_track_selection_title_text">Tekst</string>
-    <string name="exo_track_selection_title_video">Video</string>
     <string name="exo_track_stereo">Stereo</string>
     <string name="exo_track_surround">Ruumiline heli</string>
     <string name="exo_track_surround_5_point_1">Ruumiline heli 5.1</string>

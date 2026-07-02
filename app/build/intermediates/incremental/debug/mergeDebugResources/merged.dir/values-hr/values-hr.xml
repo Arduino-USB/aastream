@@ -90,8 +90,6 @@
     <string name="exo_track_selection_auto">Automatski</string>
     <string name="exo_track_selection_none">Ništa</string>
     <string name="exo_track_selection_title_audio">Audiozapis</string>
-    <string name="exo_track_selection_title_text">Tekst</string>
-    <string name="exo_track_selection_title_video">Videozapis</string>
     <string name="exo_track_stereo">Stereo</string>
     <string name="exo_track_surround">Okružujući zvuk</string>
     <string name="exo_track_surround_5_point_1">5.1-kanalni okružujući zvuk</string>

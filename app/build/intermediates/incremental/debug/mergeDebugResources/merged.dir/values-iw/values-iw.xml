@@ -59,9 +59,9 @@
     <string name="exo_controls_play_description">הפעלה</string>
     <string name="exo_controls_playback_speed">מהירות</string>
     <string name="exo_controls_previous_description">הקודם</string>
-    <string name="exo_controls_repeat_all_description">המצב הנוכחי: חזרה על כל הפריטים. לחצן להחלפת מצב החזרה.</string>
-    <string name="exo_controls_repeat_off_description">המצב הנוכחי: ללא חזרה. לחצן להחלפת מצב החזרה.</string>
-    <string name="exo_controls_repeat_one_description">המצב הנוכחי: חזרה על פריט אחד. לחצן להחלפת מצב החזרה.</string>
+    <string name="exo_controls_repeat_all_description">המצב הנוכחי: חזרה על כל הפריטים. כפתור להחלפת מצב החזרה.</string>
+    <string name="exo_controls_repeat_off_description">המצב הנוכחי: ללא חזרה. כפתור להחלפת מצב החזרה.</string>
+    <string name="exo_controls_repeat_one_description">המצב הנוכחי: חזרה על פריט אחד. כפתור להחלפת מצב החזרה.</string>
     <string name="exo_controls_rewind_description">הרצה אחורה</string>
     <string name="exo_controls_seek_bar_description">התקדמות ההפעלה</string>
     <string name="exo_controls_settings_description">הגדרות</string>
@@ -90,8 +90,6 @@
     <string name="exo_track_selection_auto">אוטומטי</string>
     <string name="exo_track_selection_none">ללא</string>
     <string name="exo_track_selection_title_audio">אודיו</string>
-    <string name="exo_track_selection_title_text">טקסט</string>
-    <string name="exo_track_selection_title_video">סרטון</string>
     <string name="exo_track_stereo">סטריאו</string>
     <string name="exo_track_surround">סראונד</string>
     <string name="exo_track_surround_5_point_1">סראונד 5.1</string>

@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">Automàtica</string>
     <string name="exo_track_selection_none">Cap</string>
     <string name="exo_track_selection_title_audio">Àudio</string>
-    <string name="exo_track_selection_title_text">Text</string>
-    <string name="exo_track_selection_title_video">Vídeo</string>
     <string name="exo_track_stereo">Estèreo</string>
     <string name="exo_track_surround">So envoltant</string>
     <string name="exo_track_surround_5_point_1">So envoltant 5.1</string>

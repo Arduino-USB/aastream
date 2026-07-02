@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">ራስ-ሰር</string>
     <string name="exo_track_selection_none">ምንም</string>
     <string name="exo_track_selection_title_audio">ኦዲዮ</string>
-    <string name="exo_track_selection_title_text">ጽሁፍ</string>
-    <string name="exo_track_selection_title_video">ቪዲዮ</string>
     <string name="exo_track_stereo">ስቲሪዮ</string>
     <string name="exo_track_surround">የዙሪያ ድምፅ</string>
     <string name="exo_track_surround_5_point_1">5.1 የዙሪያ ድምፅ</string>

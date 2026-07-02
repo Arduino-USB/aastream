@@ -90,8 +90,6 @@
     <string name="exo_track_selection_auto">Automātisks</string>
     <string name="exo_track_selection_none">Nav</string>
     <string name="exo_track_selection_title_audio">Audio</string>
-    <string name="exo_track_selection_title_text">Teksts</string>
-    <string name="exo_track_selection_title_video">Video</string>
     <string name="exo_track_stereo">Stereo</string>
     <string name="exo_track_surround">Ieskaujošā skaņa</string>
     <string name="exo_track_surround_5_point_1">5.1 ieskaujošā skaņa</string>

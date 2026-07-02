@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">自動</string>
     <string name="exo_track_selection_none">なし</string>
     <string name="exo_track_selection_title_audio">音声</string>
-    <string name="exo_track_selection_title_text">文字</string>
-    <string name="exo_track_selection_title_video">動画</string>
     <string name="exo_track_stereo">ステレオ</string>
     <string name="exo_track_surround">サラウンド サウンド</string>
     <string name="exo_track_surround_5_point_1">5.1 サラウンド サウンド</string>

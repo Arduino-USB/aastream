@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">خودکار</string>
     <string name="exo_track_selection_none">هیچ‌کدام</string>
     <string name="exo_track_selection_title_audio">صوتی</string>
-    <string name="exo_track_selection_title_text">نوشتار</string>
-    <string name="exo_track_selection_title_video">ویدیو</string>
     <string name="exo_track_stereo">استریو</string>
     <string name="exo_track_surround">صدای فراگیر</string>
     <string name="exo_track_surround_5_point_1">صدای فراگیر ۵.۱</string>

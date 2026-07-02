@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">အလိုအလျောက်</string>
     <string name="exo_track_selection_none">မရှိ</string>
     <string name="exo_track_selection_title_audio">အသံ</string>
-    <string name="exo_track_selection_title_text">စာသား</string>
-    <string name="exo_track_selection_title_video">ဗီဒီယို</string>
     <string name="exo_track_stereo">စတီရီယို</string>
     <string name="exo_track_surround">ပတ်လည် အသံစနစ်</string>
     <string name="exo_track_surround_5_point_1">5.1 ပတ်လည် အသံစနစ်</string>

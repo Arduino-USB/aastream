@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">தானியங்கு</string>
     <string name="exo_track_selection_none">ஏதுமில்லை</string>
     <string name="exo_track_selection_title_audio">ஆடியோ</string>
-    <string name="exo_track_selection_title_text">உரை</string>
-    <string name="exo_track_selection_title_video">வீடியோ</string>
     <string name="exo_track_stereo">ஸ்டீரியோ</string>
     <string name="exo_track_surround">சரவுண்ட் சவுண்ட்</string>
     <string name="exo_track_surround_5_point_1">5.1 சரவுண்ட் சவுண்ட்</string>

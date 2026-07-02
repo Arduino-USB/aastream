@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">ავტომატური</string>
     <string name="exo_track_selection_none">არცერთი</string>
     <string name="exo_track_selection_title_audio">აუდიო</string>
-    <string name="exo_track_selection_title_text">ტექსტი</string>
-    <string name="exo_track_selection_title_video">ვიდეო</string>
     <string name="exo_track_stereo">სტერეო</string>
     <string name="exo_track_surround">მოცულობითი ხმა</string>
     <string name="exo_track_surround_5_point_1">5.1 მოცულობითი ხმა</string>

@@ -1,14 +1,14 @@
 [
     {
-        "merged": "com.aastream.app-debug-22:/xml_automotive_app_desc.xml.flat",
-        "source": "com.aastream.app-main-24:/xml/automotive_app_desc.xml"
+        "merged": "com.aastream.app-debug-26:/layout_activity_main.xml.flat",
+        "source": "com.aastream.app-main-28:/layout/activity_main.xml"
     },
     {
-        "merged": "com.aastream.app-debug-22:/layout_aascreen_layout.xml.flat",
-        "source": "com.aastream.app-main-24:/layout/aascreen_layout.xml"
+        "merged": "com.aastream.app-debug-26:/xml_automotive_app_desc.xml.flat",
+        "source": "com.aastream.app-main-28:/xml/automotive_app_desc.xml"
     },
     {
-        "merged": "com.aastream.app-debug-22:/layout_activity_main.xml.flat",
-        "source": "com.aastream.app-main-24:/layout/activity_main.xml"
+        "merged": "com.aastream.app-debug-26:/layout_aascreen_layout.xml.flat",
+        "source": "com.aastream.app-main-28:/layout/aascreen_layout.xml"
     }
 ]

@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">อัตโนมัติ</string>
     <string name="exo_track_selection_none">ไม่มี</string>
     <string name="exo_track_selection_title_audio">เสียง</string>
-    <string name="exo_track_selection_title_text">ข้อความ</string>
-    <string name="exo_track_selection_title_video">วิดีโอ</string>
     <string name="exo_track_stereo">สเตอริโอ</string>
     <string name="exo_track_surround">เสียงเซอร์ราวด์</string>
     <string name="exo_track_surround_5_point_1">ระบบเสียง 5.1 เซอร์ราวด์</string>

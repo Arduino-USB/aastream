@@ -1,34 +1,45 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:2:1-52:12
-INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:2:1-52:12
-INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:2:1-52:12
-INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:2:1-52:12
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:2:1-76:12
+INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:2:1-76:12
+INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:2:1-76:12
+INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:2:1-76:12
+MERGED from [androidx.media3:media3-ui:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/c287675b62cffedd96af4cef8e8b60e8/transformed/media3-ui-1.8.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-extractor:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/3ce983b6c0d88f1bd456964038fc27d2/transformed/media3-extractor-1.8.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-container:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/e04975c7470677468988a6420db27291/transformed/media3-container-1.8.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-datasource:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/299bc593c0b00a8a8189cf8e97d51895/transformed/media3-datasource-1.8.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-decoder:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/c1d250dc59981965d12eea434c07caea/transformed/media3-decoder-1.8.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-database:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/c339fb7a6b28ef45aa96fc82da755172/transformed/media3-database-1.8.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-common:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/bef314fbc074aa62cbce3de8f1538b8f/transformed/media3-common-1.8.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.media3:media3-exoplayer:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/182562cb85a50ee96996cc9d74c94f2d/transformed/media3-exoplayer-1.8.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /home/x86debug/.gradle/caches/8.14/transforms/db64e45764b69979ca0f4d57a6afda05/transformed/appcompat-resources-1.6.1/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.appcompat:appcompat:1.6.1] /home/x86debug/.gradle/caches/8.14/transforms/0af425e38918baa7932d3853d9f43eba/transformed/appcompat-1.6.1/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:17:1-41:12
+MERGED from [androidx.recyclerview:recyclerview:1.3.0] /home/x86debug/.gradle/caches/8.14/transforms/76dead16f29dd75a817e374d35aee67f/transformed/recyclerview-1.3.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.fragment:fragment:1.3.6] /home/x86debug/.gradle/caches/8.14/transforms/f6f6c44e4bbd4a0d1a0dfcf7d1db7c70/transformed/fragment-1.3.6/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.activity:activity:1.6.0] /home/x86debug/.gradle/caches/8.14/transforms/26e1fae7e724720d0e7d044a20e19331/transformed/activity-1.6.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/2d7ce9b8d308da22c908878602b90848/transformed/drawerlayout-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.emoji2:emoji2-views-helper:1.2.0] /home/x86debug/.gradle/caches/8.14/transforms/41814792aa7040961add43de6348b19c/transformed/emoji2-views-helper-1.2.0/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.emoji2:emoji2:1.2.0] /home/x86debug/.gradle/caches/8.14/transforms/880be02a3577786cfa4427bcf52b6143/transformed/emoji2-1.2.0/AndroidManifest.xml:17:1-35:12
 MERGED from [androidx.media:media:1.6.0] /home/x86debug/.gradle/caches/8.14/transforms/0ea5a4cb9a84e41a40c4b7d96a483d96/transformed/media-1.6.0/AndroidManifest.xml:17:1-24:12
-MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /home/x86debug/.gradle/caches/8.14/transforms/b550793d48c14bb73fe8b8b7f612e6d2/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:17:1-24:12
-MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /home/x86debug/.gradle/caches/8.14/transforms/6ea07d2a23e7db13bf13a9dda52c90aa/transformed/vectordrawable-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.viewpager:viewpager:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/9ad0fa708b641048ffa54f8fa99f81d6/transformed/viewpager-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.customview:customview:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/18f4820ffef2bc83d1d9b8ed656080e9/transformed/customview-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/f7e772cb6b907cd0afd56c3739c95b95/transformed/customview-poolingcontainer-1.0.0/AndroidManifest.xml:17:1-23:12
 MERGED from [androidx.loader:loader:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/5489cdb3734c209b37fcfa9630f0d877/transformed/loader-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.5.1] /home/x86debug/.gradle/caches/8.14/transforms/95ed4fa7dc8c4bb98baa19c47bc08da7/transformed/lifecycle-viewmodel-2.5.1/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.5.1] /home/x86debug/.gradle/caches/8.14/transforms/cb27d4e41a9bd38d8113d249b01c6a4b/transformed/lifecycle-viewmodel-savedstate-2.5.1/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.core:core-ktx:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/37b849163d6735dc1c78898b4b928947/transformed/core-ktx-1.9.0/AndroidManifest.xml:2:1-7:12
-MERGED from [androidx.viewpager:viewpager:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/9ad0fa708b641048ffa54f8fa99f81d6/transformed/viewpager-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.customview:customview:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/18f4820ffef2bc83d1d9b8ed656080e9/transformed/customview-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /home/x86debug/.gradle/caches/8.14/transforms/b550793d48c14bb73fe8b8b7f612e6d2/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /home/x86debug/.gradle/caches/8.14/transforms/6ea07d2a23e7db13bf13a9dda52c90aa/transformed/vectordrawable-1.1.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.core:core:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/5373c1d8f553da7fd300b4d6c5dd4f3f/transformed/core-1.9.0/AndroidManifest.xml:17:1-30:12
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/999a42463419ead8d79534a629f52362/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:17:1-27:12
+MERGED from [androidx.exifinterface:exifinterface:1.3.6] /home/x86debug/.gradle/caches/8.14/transforms/13017c9d5fa60b896b8d3d70114d2ef8/transformed/exifinterface-1.3.6/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/bb7e815b85ff8b7c32110d19439884db/transformed/cursoradapter-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-process:2.4.1] /home/x86debug/.gradle/caches/8.14/transforms/25dafa88226f205e736010f396ff90ab/transformed/lifecycle-process-2.4.1/AndroidManifest.xml:17:1-37:12
 MERGED from [androidx.lifecycle:lifecycle-runtime:2.5.1] /home/x86debug/.gradle/caches/8.14/transforms/9ec7bc73fa15c6a1065fbd82c593f421/transformed/lifecycle-runtime-2.5.1/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.savedstate:savedstate:1.2.0] /home/x86debug/.gradle/caches/8.14/transforms/0cc359442866247525e36ace1fb2e7ba/transformed/savedstate-1.2.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.startup:startup-runtime:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/b808072358eb8396b4030e68c3b22ad7/transformed/startup-runtime-1.1.1/AndroidManifest.xml:17:1-33:12
 MERGED from [androidx.tracing:tracing:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/2f7f0ad98dc3d794d6fe02a69305cb72/transformed/tracing-1.0.0/AndroidManifest.xml:17:1-24:12
-MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/999a42463419ead8d79534a629f52362/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:17:1-27:12
 MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /home/x86debug/.gradle/caches/8.14/transforms/ed8581ed57f952c08b51ba108ce0d8f1/transformed/lifecycle-livedata-2.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.5.1] /home/x86debug/.gradle/caches/8.14/transforms/9de8425ca8a4f45bf8890883795ee5e9/transformed/lifecycle-livedata-core-2.5.1/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.arch.core:core-runtime:2.1.0] /home/x86debug/.gradle/caches/8.14/transforms/334907e7580ae53a9c838419b3fb18d2/transformed/core-runtime-2.1.0/AndroidManifest.xml:17:1-24:12
@@ -58,107 +69,189 @@ uses-permission#android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION
 ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:7:5-94
 	android:name
 		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:7:22-91
-uses-permission#android.permission.SYSTEM_ALERT_WINDOW
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:8:5-78
+uses-permission#android.permission.FOREGROUND_SERVICE_SPECIAL_USE
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:8:5-89
 	android:name
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:8:22-75
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:8:22-86
+uses-permission#android.permission.SYSTEM_ALERT_WINDOW
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:9:5-78
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:9:22-75
+uses-permission#android.permission.INTERNET
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:11:5-67
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:11:22-64
+uses-permission#android.permission.ACCESS_WIFI_STATE
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:12:5-76
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:12:22-73
+uses-permission#android.permission.CHANGE_WIFI_STATE
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:13:5-76
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:13:22-73
+uses-permission#android.permission.ACCESS_FINE_LOCATION
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:14:5-79
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:14:22-76
+uses-permission#android.permission.NEARBY_WIFI_DEVICES
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:15:2-16:67
+	android:usesPermissionFlags
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:16:18-64
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:15:19-72
+uses-permission#android.permission.BLUETOOTH_ADVERTISE
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:17:5-78
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:17:22-75
+uses-permission#android.permission.BLUETOOTH_CONNECT
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:18:5-76
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:18:22-73
+uses-permission#android.permission.BLUETOOTH_SCAN
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:19:5-73
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:19:22-70
+uses-permission#android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:21:5-94
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:21:22-91
 application
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:10:5-51:19
-INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:10:5-51:19
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:23:5-75:19
+INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:23:5-75:19
 MERGED from [androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:30:5-39:19
 MERGED from [androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:30:5-39:19
 MERGED from [androidx.emoji2:emoji2:1.2.0] /home/x86debug/.gradle/caches/8.14/transforms/880be02a3577786cfa4427bcf52b6143/transformed/emoji2-1.2.0/AndroidManifest.xml:23:5-33:19
 MERGED from [androidx.emoji2:emoji2:1.2.0] /home/x86debug/.gradle/caches/8.14/transforms/880be02a3577786cfa4427bcf52b6143/transformed/emoji2-1.2.0/AndroidManifest.xml:23:5-33:19
 MERGED from [androidx.core:core:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/5373c1d8f553da7fd300b4d6c5dd4f3f/transformed/core-1.9.0/AndroidManifest.xml:28:5-89
 MERGED from [androidx.core:core:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/5373c1d8f553da7fd300b4d6c5dd4f3f/transformed/core-1.9.0/AndroidManifest.xml:28:5-89
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/999a42463419ead8d79534a629f52362/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/999a42463419ead8d79534a629f52362/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
 MERGED from [androidx.lifecycle:lifecycle-process:2.4.1] /home/x86debug/.gradle/caches/8.14/transforms/25dafa88226f205e736010f396ff90ab/transformed/lifecycle-process-2.4.1/AndroidManifest.xml:25:5-35:19
 MERGED from [androidx.lifecycle:lifecycle-process:2.4.1] /home/x86debug/.gradle/caches/8.14/transforms/25dafa88226f205e736010f396ff90ab/transformed/lifecycle-process-2.4.1/AndroidManifest.xml:25:5-35:19
 MERGED from [androidx.startup:startup-runtime:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/b808072358eb8396b4030e68c3b22ad7/transformed/startup-runtime-1.1.1/AndroidManifest.xml:25:5-31:19
 MERGED from [androidx.startup:startup-runtime:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/b808072358eb8396b4030e68c3b22ad7/transformed/startup-runtime-1.1.1/AndroidManifest.xml:25:5-31:19
-MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/999a42463419ead8d79534a629f52362/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
-MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/999a42463419ead8d79534a629f52362/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
 	android:extractNativeLibs
 		INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml
-	android:process
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:15:9-32
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/5373c1d8f553da7fd300b4d6c5dd4f3f/transformed/core-1.9.0/AndroidManifest.xml:28:18-86
 	android:label
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:12:9-33
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:25:9-33
 	android:icon
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:13:9-58
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:26:9-58
 	android:allowBackup
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:11:9-35
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:24:9-35
 	android:theme
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:14:9-59
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:27:9-59
 meta-data#com.google.android.gms.car.application
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:17:9-19:59
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:29:9-31:59
 	android:resource
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:19:13-56
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:31:13-56
 	android:name
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:18:13-66
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:30:13-66
 meta-data#androidx.car.app.minCarApiLevel
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:21:9-23:33
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:33:9-35:33
 	android:value
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:23:13-30
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:35:13-30
 	android:name
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:22:13-59
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:34:13-59
 activity#com.aastream.MainActivity
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:25:9-33:20
-	android:process
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:28:13-36
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:37:9-45:20
 	android:exported
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:27:13-36
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:39:13-36
+	android:configChanges
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:40:13-59
 	android:name
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:26:13-41
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:38:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:29:13-32:29
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:41:13-44:29
 action#android.intent.action.MAIN
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:30:17-69
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:42:17-69
 	android:name
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:30:25-66
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:42:25-66
 category#android.intent.category.LAUNCHER
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:31:17-77
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:43:17-77
 	android:name
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:31:27-74
-service#com.aastream.car.EntryPoint
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:35:9-43:19
-	android:process
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:38:13-36
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:43:27-74
+service#com.aastream.OverlayService
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:47:9-54:19
 	android:exported
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:37:13-36
-	android:name
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:36:13-55
-intent-filter#action:name:androidx.car.app.CarAppService+category:name:androidx.car.app.category.NAVIGATION
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:39:13-42:29
-action#androidx.car.app.CarAppService
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:40:17-73
-	android:name
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:40:25-70
-category#androidx.car.app.category.NAVIGATION
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:41:17-80
-	android:name
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:41:27-78
-service#com.aastream.ScreenCaptureService
-ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:45:9-49:39
-	android:process
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:49:13-36
-	android:exported
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:47:13-37
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:49:13-37
 	android:foregroundServiceType
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:48:13-60
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:50:13-55
 	android:name
-		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:46:13-49
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:48:13-43
+property#android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:51:13-53:161
+	android:value
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:53:17-158
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:52:17-76
+service#com.aastream.car.EntryPoint
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:56:9-68:19
+	android:exported
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:58:13-36
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:57:13-55
+intent-filter#action:name:androidx.car.app.CarAppService+category:name:androidx.car.app.category.NAVIGATION
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:59:13-62:29
+action#androidx.car.app.CarAppService
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:60:17-73
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:60:25-70
+category#androidx.car.app.category.NAVIGATION
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:61:17-80
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:61:27-78
+intent-filter#action:name:android.intent.action.PICK+category:name:android.intent.category.DEFAULT+data:scheme:geo
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:63:13-67:29
+action#android.intent.action.PICK
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:64:17-69
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:64:25-66
+category#android.intent.category.DEFAULT
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:65:17-76
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:65:27-73
+data
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:66:17-46
+	android:scheme
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:66:23-43
+service#com.aastream.ScreenCaptureService
+ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:70:9-73:63
+	android:exported
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:72:13-37
+	android:foregroundServiceType
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:73:13-60
+	android:name
+		ADDED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml:71:13-49
 uses-sdk
 INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml
 INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml
+MERGED from [androidx.media3:media3-ui:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/c287675b62cffedd96af4cef8e8b60e8/transformed/media3-ui-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-ui:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/c287675b62cffedd96af4cef8e8b60e8/transformed/media3-ui-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-extractor:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/3ce983b6c0d88f1bd456964038fc27d2/transformed/media3-extractor-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-extractor:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/3ce983b6c0d88f1bd456964038fc27d2/transformed/media3-extractor-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-container:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/e04975c7470677468988a6420db27291/transformed/media3-container-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-container:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/e04975c7470677468988a6420db27291/transformed/media3-container-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-datasource:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/299bc593c0b00a8a8189cf8e97d51895/transformed/media3-datasource-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-datasource:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/299bc593c0b00a8a8189cf8e97d51895/transformed/media3-datasource-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-decoder:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/c1d250dc59981965d12eea434c07caea/transformed/media3-decoder-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-decoder:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/c1d250dc59981965d12eea434c07caea/transformed/media3-decoder-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-database:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/c339fb7a6b28ef45aa96fc82da755172/transformed/media3-database-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-database:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/c339fb7a6b28ef45aa96fc82da755172/transformed/media3-database-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-common:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/bef314fbc074aa62cbce3de8f1538b8f/transformed/media3-common-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-common:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/bef314fbc074aa62cbce3de8f1538b8f/transformed/media3-common-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-exoplayer:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/182562cb85a50ee96996cc9d74c94f2d/transformed/media3-exoplayer-1.8.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-exoplayer:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/182562cb85a50ee96996cc9d74c94f2d/transformed/media3-exoplayer-1.8.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /home/x86debug/.gradle/caches/8.14/transforms/db64e45764b69979ca0f4d57a6afda05/transformed/appcompat-resources-1.6.1/AndroidManifest.xml:20:5-44
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /home/x86debug/.gradle/caches/8.14/transforms/db64e45764b69979ca0f4d57a6afda05/transformed/appcompat-resources-1.6.1/AndroidManifest.xml:20:5-44
 MERGED from [androidx.appcompat:appcompat:1.6.1] /home/x86debug/.gradle/caches/8.14/transforms/0af425e38918baa7932d3853d9f43eba/transformed/appcompat-1.6.1/AndroidManifest.xml:20:5-44
 MERGED from [androidx.appcompat:appcompat:1.6.1] /home/x86debug/.gradle/caches/8.14/transforms/0af425e38918baa7932d3853d9f43eba/transformed/appcompat-1.6.1/AndroidManifest.xml:20:5-44
 MERGED from [androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:21:5-44
 MERGED from [androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.recyclerview:recyclerview:1.3.0] /home/x86debug/.gradle/caches/8.14/transforms/76dead16f29dd75a817e374d35aee67f/transformed/recyclerview-1.3.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.recyclerview:recyclerview:1.3.0] /home/x86debug/.gradle/caches/8.14/transforms/76dead16f29dd75a817e374d35aee67f/transformed/recyclerview-1.3.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.fragment:fragment:1.3.6] /home/x86debug/.gradle/caches/8.14/transforms/f6f6c44e4bbd4a0d1a0dfcf7d1db7c70/transformed/fragment-1.3.6/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.fragment:fragment:1.3.6] /home/x86debug/.gradle/caches/8.14/transforms/f6f6c44e4bbd4a0d1a0dfcf7d1db7c70/transformed/fragment-1.3.6/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.activity:activity:1.6.0] /home/x86debug/.gradle/caches/8.14/transforms/26e1fae7e724720d0e7d044a20e19331/transformed/activity-1.6.0/AndroidManifest.xml:20:5-44
@@ -171,10 +264,12 @@ MERGED from [androidx.emoji2:emoji2:1.2.0] /home/x86debug/.gradle/caches/8.14/tr
 MERGED from [androidx.emoji2:emoji2:1.2.0] /home/x86debug/.gradle/caches/8.14/transforms/880be02a3577786cfa4427bcf52b6143/transformed/emoji2-1.2.0/AndroidManifest.xml:21:5-44
 MERGED from [androidx.media:media:1.6.0] /home/x86debug/.gradle/caches/8.14/transforms/0ea5a4cb9a84e41a40c4b7d96a483d96/transformed/media-1.6.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.media:media:1.6.0] /home/x86debug/.gradle/caches/8.14/transforms/0ea5a4cb9a84e41a40c4b7d96a483d96/transformed/media-1.6.0/AndroidManifest.xml:20:5-22:41
-MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /home/x86debug/.gradle/caches/8.14/transforms/b550793d48c14bb73fe8b8b7f612e6d2/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
-MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /home/x86debug/.gradle/caches/8.14/transforms/b550793d48c14bb73fe8b8b7f612e6d2/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
-MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /home/x86debug/.gradle/caches/8.14/transforms/6ea07d2a23e7db13bf13a9dda52c90aa/transformed/vectordrawable-1.1.0/AndroidManifest.xml:20:5-22:41
-MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /home/x86debug/.gradle/caches/8.14/transforms/6ea07d2a23e7db13bf13a9dda52c90aa/transformed/vectordrawable-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.viewpager:viewpager:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/9ad0fa708b641048ffa54f8fa99f81d6/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/9ad0fa708b641048ffa54f8fa99f81d6/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/18f4820ffef2bc83d1d9b8ed656080e9/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/18f4820ffef2bc83d1d9b8ed656080e9/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/f7e772cb6b907cd0afd56c3739c95b95/transformed/customview-poolingcontainer-1.0.0/AndroidManifest.xml:20:5-21:38
+MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/f7e772cb6b907cd0afd56c3739c95b95/transformed/customview-poolingcontainer-1.0.0/AndroidManifest.xml:20:5-21:38
 MERGED from [androidx.loader:loader:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/5489cdb3734c209b37fcfa9630f0d877/transformed/loader-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.loader:loader:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/5489cdb3734c209b37fcfa9630f0d877/transformed/loader-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.5.1] /home/x86debug/.gradle/caches/8.14/transforms/95ed4fa7dc8c4bb98baa19c47bc08da7/transformed/lifecycle-viewmodel-2.5.1/AndroidManifest.xml:20:5-22:41
@@ -183,12 +278,16 @@ MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.5.1] /home/x86d
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.5.1] /home/x86debug/.gradle/caches/8.14/transforms/cb27d4e41a9bd38d8113d249b01c6a4b/transformed/lifecycle-viewmodel-savedstate-2.5.1/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.core:core-ktx:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/37b849163d6735dc1c78898b4b928947/transformed/core-ktx-1.9.0/AndroidManifest.xml:5:5-44
 MERGED from [androidx.core:core-ktx:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/37b849163d6735dc1c78898b4b928947/transformed/core-ktx-1.9.0/AndroidManifest.xml:5:5-44
-MERGED from [androidx.viewpager:viewpager:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/9ad0fa708b641048ffa54f8fa99f81d6/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.viewpager:viewpager:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/9ad0fa708b641048ffa54f8fa99f81d6/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.customview:customview:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/18f4820ffef2bc83d1d9b8ed656080e9/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.customview:customview:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/18f4820ffef2bc83d1d9b8ed656080e9/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /home/x86debug/.gradle/caches/8.14/transforms/b550793d48c14bb73fe8b8b7f612e6d2/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /home/x86debug/.gradle/caches/8.14/transforms/b550793d48c14bb73fe8b8b7f612e6d2/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /home/x86debug/.gradle/caches/8.14/transforms/6ea07d2a23e7db13bf13a9dda52c90aa/transformed/vectordrawable-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /home/x86debug/.gradle/caches/8.14/transforms/6ea07d2a23e7db13bf13a9dda52c90aa/transformed/vectordrawable-1.1.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.core:core:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/5373c1d8f553da7fd300b4d6c5dd4f3f/transformed/core-1.9.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.core:core:1.9.0] /home/x86debug/.gradle/caches/8.14/transforms/5373c1d8f553da7fd300b4d6c5dd4f3f/transformed/core-1.9.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/999a42463419ead8d79534a629f52362/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/999a42463419ead8d79534a629f52362/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.exifinterface:exifinterface:1.3.6] /home/x86debug/.gradle/caches/8.14/transforms/13017c9d5fa60b896b8d3d70114d2ef8/transformed/exifinterface-1.3.6/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.exifinterface:exifinterface:1.3.6] /home/x86debug/.gradle/caches/8.14/transforms/13017c9d5fa60b896b8d3d70114d2ef8/transformed/exifinterface-1.3.6/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/bb7e815b85ff8b7c32110d19439884db/transformed/cursoradapter-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/bb7e815b85ff8b7c32110d19439884db/transformed/cursoradapter-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-process:2.4.1] /home/x86debug/.gradle/caches/8.14/transforms/25dafa88226f205e736010f396ff90ab/transformed/lifecycle-process-2.4.1/AndroidManifest.xml:21:5-23:41
@@ -201,8 +300,6 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] /home/x86debug/.gradle/cach
 MERGED from [androidx.startup:startup-runtime:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/b808072358eb8396b4030e68c3b22ad7/transformed/startup-runtime-1.1.1/AndroidManifest.xml:21:5-23:41
 MERGED from [androidx.tracing:tracing:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/2f7f0ad98dc3d794d6fe02a69305cb72/transformed/tracing-1.0.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.tracing:tracing:1.0.0] /home/x86debug/.gradle/caches/8.14/transforms/2f7f0ad98dc3d794d6fe02a69305cb72/transformed/tracing-1.0.0/AndroidManifest.xml:20:5-22:41
-MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/999a42463419ead8d79534a629f52362/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
-MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/x86debug/.gradle/caches/8.14/transforms/999a42463419ead8d79534a629f52362/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /home/x86debug/.gradle/caches/8.14/transforms/ed8581ed57f952c08b51ba108ce0d8f1/transformed/lifecycle-livedata-2.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /home/x86debug/.gradle/caches/8.14/transforms/ed8581ed57f952c08b51ba108ce0d8f1/transformed/lifecycle-livedata-2.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.5.1] /home/x86debug/.gradle/caches/8.14/transforms/9de8425ca8a4f45bf8890883795ee5e9/transformed/lifecycle-livedata-core-2.5.1/AndroidManifest.xml:20:5-22:41
@@ -217,6 +314,12 @@ MERGED from [androidx.annotation:annotation-experimental:1.3.1] /home/x86debug/.
 		INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml
 	android:minSdkVersion
 		INJECTED from /home/x86debug/AAStream/app/src/main/AndroidManifest.xml
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from [androidx.media3:media3-common:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/bef314fbc074aa62cbce3de8f1538b8f/transformed/media3-common-1.8.0/AndroidManifest.xml:22:5-79
+MERGED from [androidx.media3:media3-exoplayer:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/182562cb85a50ee96996cc9d74c94f2d/transformed/media3-exoplayer-1.8.0/AndroidManifest.xml:22:5-79
+MERGED from [androidx.media3:media3-exoplayer:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/182562cb85a50ee96996cc9d74c94f2d/transformed/media3-exoplayer-1.8.0/AndroidManifest.xml:22:5-79
+	android:name
+		ADDED from [androidx.media3:media3-common:1.8.0] /home/x86debug/.gradle/caches/8.14/transforms/bef314fbc074aa62cbce3de8f1538b8f/transformed/media3-common-1.8.0/AndroidManifest.xml:22:22-76
 queries
 ADDED from [androidx.car.app:app:1.4.0] /home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/AndroidManifest.xml:23:5-28:15
 provider#androidx.car.app.connection.provider

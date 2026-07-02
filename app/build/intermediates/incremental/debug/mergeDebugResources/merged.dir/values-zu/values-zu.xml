@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">Okuzenzakalelayo</string>
     <string name="exo_track_selection_none">Lutho</string>
     <string name="exo_track_selection_title_audio">Umsindo</string>
-    <string name="exo_track_selection_title_text">Umbhalo</string>
-    <string name="exo_track_selection_title_video">Ividiyo</string>
     <string name="exo_track_stereo">I-Stereo</string>
     <string name="exo_track_surround">Umsindo ozungelezile</string>
     <string name="exo_track_surround_5_point_1">Umsindo ozungelezile ongu-5.1</string>

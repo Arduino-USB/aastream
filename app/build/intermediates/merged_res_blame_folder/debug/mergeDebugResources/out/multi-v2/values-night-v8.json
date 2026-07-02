@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.aastream.app-mergeDebugResources-20:/values-night-v8/values-night-v8.xml",
+            "outputFile": "com.aastream.app-mergeDebugResources-24:/values-night-v8/values-night-v8.xml",
             "map": [
                 {
                     "source": "/home/x86debug/.gradle/caches/8.14/transforms/92a943b2445db17677ef64ff4584dac3/transformed/app-1.4.0/res/values-night-v8/values-night-v8.xml",

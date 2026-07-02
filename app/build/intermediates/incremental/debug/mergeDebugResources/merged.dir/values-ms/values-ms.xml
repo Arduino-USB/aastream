@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">Automatik</string>
     <string name="exo_track_selection_none">Tiada</string>
     <string name="exo_track_selection_title_audio">Audio</string>
-    <string name="exo_track_selection_title_text">Teks</string>
-    <string name="exo_track_selection_title_video">Video</string>
     <string name="exo_track_stereo">Stereo</string>
     <string name="exo_track_surround">Bunyi keliling</string>
     <string name="exo_track_surround_5_point_1">Bunyi keliling 5.1</string>

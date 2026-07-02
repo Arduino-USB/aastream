@@ -1,7 +1,15 @@
 R_DEF: Internal format may change without notice
 local
+id btn_media_pause
+id btn_media_stop
+id btn_native_video
+id btn_network_stream
 id btn_toggle_stream
+id layout_media_controls
+id native_player_view
 id screen_cast
+id spinner_audio_tracks
+id spinner_subtitles
 id text_view
 layout aascreen_layout
 layout activity_main

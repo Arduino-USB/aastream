@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">자동</string>
     <string name="exo_track_selection_none">없음</string>
     <string name="exo_track_selection_title_audio">오디오</string>
-    <string name="exo_track_selection_title_text">텍스트</string>
-    <string name="exo_track_selection_title_video">동영상</string>
     <string name="exo_track_stereo">스테레오</string>
     <string name="exo_track_surround">서라운드 사운드</string>
     <string name="exo_track_surround_5_point_1">5.1 서라운드 사운드</string>

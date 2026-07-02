@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">आपोआप</string>
     <string name="exo_track_selection_none">काहीही नाही</string>
     <string name="exo_track_selection_title_audio">ऑडिओ</string>
-    <string name="exo_track_selection_title_text">मजकूर</string>
-    <string name="exo_track_selection_title_video">व्हिडिओ</string>
     <string name="exo_track_stereo">स्टिरिओ</string>
     <string name="exo_track_surround">सराउंड साउंड</string>
     <string name="exo_track_surround_5_point_1">५.१ सराउंड साउंड</string>

@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">ಸ್ವಯಂ</string>
     <string name="exo_track_selection_none">ಯಾವುದೂ ಅಲ್ಲ</string>
     <string name="exo_track_selection_title_audio">ಆಡಿಯೋ</string>
-    <string name="exo_track_selection_title_text">ಪಠ್ಯ</string>
-    <string name="exo_track_selection_title_video">ವೀಡಿಯೊ</string>
     <string name="exo_track_stereo">ಸ್ಟೀರಿಯೊ</string>
     <string name="exo_track_surround">ಸರೌಂಡ್ ಶಬ್ದ</string>
     <string name="exo_track_surround_5_point_1">5.1 ಸರೌಂಡ್ ಶಬ್ದ</string>

@@ -92,8 +92,6 @@
     <string name="exo_track_selection_auto">Automatinė</string>
     <string name="exo_track_selection_none">Nėra</string>
     <string name="exo_track_selection_title_audio">Garso įrašas</string>
-    <string name="exo_track_selection_title_text">Tekstas</string>
-    <string name="exo_track_selection_title_video">Vaizdo įrašas</string>
     <string name="exo_track_stereo">Stereofoninis</string>
     <string name="exo_track_surround">Erdvinis garsas</string>
     <string name="exo_track_surround_5_point_1">5.1 erdvinis garsas</string>

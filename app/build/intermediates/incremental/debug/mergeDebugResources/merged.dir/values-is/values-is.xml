@@ -88,8 +88,6 @@
     <string name="exo_track_selection_auto">Sjálfvirkt</string>
     <string name="exo_track_selection_none">Ekkert</string>
     <string name="exo_track_selection_title_audio">Hljóð</string>
-    <string name="exo_track_selection_title_text">Texti</string>
-    <string name="exo_track_selection_title_video">Myndskeið</string>
     <string name="exo_track_stereo">Víðóma</string>
     <string name="exo_track_surround">Víðóma hljóð</string>
     <string name="exo_track_surround_5_point_1">5.1 víðóma hljóð</string>
