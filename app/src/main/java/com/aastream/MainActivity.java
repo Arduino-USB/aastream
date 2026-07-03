@@ -19,6 +19,14 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.SeekBar;
+import android.widget.TextView;
+
+import androidx.media3.common.Player;
+
+
 import com.aastream.car.DisplayMgr;
 
 import java.util.ArrayList;
@@ -38,6 +46,31 @@ public class MainActivity extends Activity implements DisplayMgr.PlayerStateList
     private LinearLayout layoutMediaControls;
     private Spinner spinnerSubtitles, spinnerAudioTracks;
     
+	// Add these instance variables to MainActivity
+	private SeekBar mediaSeekBar;
+	private TextView tvCurrentTime, tvTotalTime;
+	private Handler seekHandler = new Handler(Looper.getMainLooper());
+	private boolean isUserSeeking = false;
+	
+	private Runnable seekUpdater = new Runnable() {
+	    @Override
+	    public void run() {
+	        if (DisplayMgr.exoPlayer != null && !isUserSeeking && DisplayMgr.exoPlayer.getPlaybackState() != Player.STATE_IDLE) {
+	            long currentPos = DisplayMgr.exoPlayer.getCurrentPosition();
+	            long duration = DisplayMgr.exoPlayer.getDuration();
+	            
+	            if (duration > 0) {
+	                mediaSeekBar.setMax((int) duration);
+	                mediaSeekBar.setProgress((int) currentPos);
+	                tvCurrentTime.setText(formatTime(currentPos));
+	                tvTotalTime.setText(formatTime(duration));
+	            }
+	        }
+	        seekHandler.postDelayed(this, 1000); // Poll every second
+	    }
+	};
+	
+	
     private ArrayList<String> subtitleList;
     private ArrayAdapter<String> subtitleAdapter;
     
@@ -49,6 +82,13 @@ public class MainActivity extends Activity implements DisplayMgr.PlayerStateList
     private Uri currentVideoUri = null;
     private boolean isPlaybackCompleted = false;
 
+	private String formatTime(long ms) {
+	    int totalSeconds = (int) (ms / 1000);
+	    int minutes = totalSeconds / 60;
+	    int seconds = totalSeconds % 60;
+	    return String.format(java.util.Locale.US, "%02d:%02d", minutes, seconds);
+	}
+		
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +110,35 @@ public class MainActivity extends Activity implements DisplayMgr.PlayerStateList
         btnNetworkStream.setText("Start Network Stream");
 
         DisplayMgr.setPlayerStateListener(this);
-
+		
+		// Inside onCreate() after your other findViewById lookups:
+		mediaSeekBar = findViewById(R.id.media_seekbar);
+		tvCurrentTime = findViewById(R.id.tv_current_time);
+		tvTotalTime = findViewById(R.id.tv_total_time);
+		
+		mediaSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+		    @Override
+		    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+		        if (fromUser) {
+		            tvCurrentTime.setText(formatTime(progress));
+		        }
+		    }
+		
+		    @Override
+		    public void onStartTrackingTouch(SeekBar seekBar) {
+		        isUserSeeking = true;
+		    }
+		
+		    @Override
+		    public void onStopTrackingTouch(SeekBar seekBar) {
+		        isUserSeeking = false;
+		        if (DisplayMgr.exoPlayer != null) {
+		            DisplayMgr.exoPlayer.seekTo(seekBar.getProgress());
+		        }
+		    }
+		});
+		
+		
         // Subtitle Spinner setup
         subtitleList = new ArrayList<>();
         subtitleList.add("No Track");
@@ -113,6 +181,7 @@ public class MainActivity extends Activity implements DisplayMgr.PlayerStateList
             intent.setType("video/*");
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             startActivityForResult(intent, PICK_VIDEO_CODE);
+			seekHandler.post(seekUpdater);
         });
 
         btnMediaPause.setOnClickListener(v -> {
@@ -179,6 +248,7 @@ public class MainActivity extends Activity implements DisplayMgr.PlayerStateList
             btnMediaPause.setText("Pause");
             btnMediaPause.setEnabled(true);
             DisplayMgr.playNativeVideoFile(currentVideoUri);
+			seekHandler.post(seekUpdater);
         }
     }
 
@@ -262,6 +332,11 @@ public class MainActivity extends Activity implements DisplayMgr.PlayerStateList
 
         audioTrackList.clear();
         audioTrackAdapter.notifyDataSetChanged();
+		
+		seekHandler.removeCallbacks(seekUpdater);
+		mediaSeekBar.setProgress(0);
+		tvCurrentTime.setText("00:00");
+		tvTotalTime.setText("00:00");
     }
 
     private boolean checkAndRequestOverlayPermission() {
@@ -322,6 +397,7 @@ public class MainActivity extends Activity implements DisplayMgr.PlayerStateList
     protected void onDestroy() {
         netHub.shutdownPipeline();
         DisplayMgr.stopAllMediaEngines();
+		seekHandler.removeCallbacks(seekUpdater);
         super.onDestroy();
     }
 }

@@ -323,7 +323,7 @@ public static void handleNetworkClient(Socket clientSocket) {
 
                             // Schedule next frame
                             if (isNetworkStreamingActive && frameCaptureHandler != null) {
-                                frameCaptureHandler.postDelayed(this, 50);
+                                frameCaptureHandler.postDelayed(this, 16);
                             }
                         }, frameCaptureHandler);
 

@@ -77,7 +77,6 @@ def render(ip):
                     cv2.imshow(window_name, frame)
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
-                    print(f"✓ Frame {len(data)/1024:.1f} KB")
                 else:
                     print("Failed to decode JPEG")
             except Exception as e:

@@ -6,11 +6,14 @@ id btn_native_video
 id btn_network_stream
 id btn_toggle_stream
 id layout_media_controls
+id media_seekbar
 id native_player_view
 id screen_cast
 id spinner_audio_tracks
 id spinner_subtitles
 id text_view
+id tv_current_time
+id tv_total_time
 layout aascreen_layout
 layout activity_main
 string app_name
