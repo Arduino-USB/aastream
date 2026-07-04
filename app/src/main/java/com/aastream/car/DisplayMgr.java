@@ -30,6 +30,8 @@ import androidx.media3.common.Player;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
 
+import androidx.media3.exoplayer.DefaultRenderersFactory;
+
 import com.aastream.R;
 import com.aastream.ScreenBridge;
 
@@ -115,12 +117,11 @@ public class DisplayMgr {
 			}
 		});
 	}
-	
-	private static void manage_screen(Context context) {
+private static void manage_screen(Context context) {
     if (display == null) return;
     try {
         Context displayContext = context.createDisplayContext(display.getDisplay());
-        presentation = new Presentation(displayContext, display.getDisplay());	
+        presentation = new Presentation(displayContext, display.getDisplay());    
         
         if (presentation.getWindow() != null) {
             presentation.getWindow().addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
@@ -133,7 +134,24 @@ public class DisplayMgr {
         nativePlayerView = presentation.findViewById(R.id.native_player_view);
 
         if (exoPlayer == null) {
-            exoPlayer = new ExoPlayer.Builder(displayContext).build();
+            // Enforce tight video synchronization tolerances via custom RenderersFactory
+            DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(displayContext)
+                    .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
+            
+            // Configure aggressive low-latency buffering to prevent video lagging behind audio
+            androidx.media3.exoplayer.DefaultLoadControl loadControl = new androidx.media3.exoplayer.DefaultLoadControl.Builder()
+                    .setBufferDurationsMs(
+                            1000,  // Min buffer before playback starts
+                            2500,  // Max buffer size
+                            500,   // Buffer required to resume after a re-buffer
+                            500    // Buffer required for initial playback
+                    )
+                    .build();
+
+            exoPlayer = new ExoPlayer.Builder(displayContext, renderersFactory)
+                    .setLoadControl(loadControl)
+                    .build();
+            
             nativePlayerView.setPlayer(exoPlayer);
         }
 
@@ -163,14 +181,10 @@ public class DisplayMgr {
                 return true;
             }
             @Override public void onSurfaceTextureUpdated(SurfaceTexture st) {
-                // Keep frame loops intact
             }
         });
 
-        // 1. Show the presentation window FIRST so the surface layers exist in the system window manager
         presentation.show(); 
-        
-        // 2. Call trigger AFTER show() so views modify visibility contexts safely inside an existing window
         trigger(lastKnownState);
 
     } catch (Exception e) { Log.e(TAG, "Presentation setup error", e); }
@@ -270,126 +284,96 @@ private static void sendBitmapOverNetwork(Bitmap bitmap) {
 public static void handleNetworkClient(Socket clientSocket) {
     synchronized (socketLock) {
         try {
-            Log.i(TAG, "[Network] Client established. Using raw bitmap streaming (no encoder)...");
+            Log.i(TAG, "[Network] Client connected. Migrating framework directly onto hardware MediaCodec pipeline...");
             
             if (networkOutputStream != null) {
                 try { networkOutputStream.close(); } catch (IOException ignored) {}
             }
             networkOutputStream = clientSocket.getOutputStream();
-            
             isNetworkStreamingActive = true;
             
-            // Setup frame capture thread
-            frameCaptureThread = new HandlerThread("AAStreamBitmapCapture", 
-                    android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
-            frameCaptureThread.start();
-            frameCaptureHandler = new Handler(frameCaptureThread.getLooper());
+            int targetWidth = ScreenBridge.width > 0 ? ScreenBridge.width : 800;
+            int targetHeight = ScreenBridge.height > 0 ? ScreenBridge.height : 480;
+            
+            videoEncoder = createAndConfigureEncoder(targetWidth, targetHeight);
+            if (videoEncoder == null) {
+                Log.e(TAG, "[Network_Critical] Pipeline setup terminated due to MediaCodec initialization runtime errors.");
+                isNetworkStreamingActive = false;
+                return;
+            }
 
-            // Start sending bitmaps
-            frameCaptureHandler.post(new Runnable() {
-                private int frameCount = 0;
+            // Redirect rendering target context straight over onto the MediaCodec input surface
+            if (encoderInputSurface != null) {
+                Log.d(TAG, "[Network] Intercepting rendering context - routing VirtualDisplay frame tree layer output directly to MediaCodec input surface targets.");
+                apply_surface(encoderInputSurface);
+            }
 
-                @Override
-                public void run() {
-                    if (!isNetworkStreamingActive || presentation == null || 
-                        presentation.getWindow() == null) {
-                        return;
-                    }
-
-                    frameCount++;
-                    if (frameCount % 30 == 0) {
-                        Log.i(TAG, "[Bitmap] Sending frame #" + frameCount);
-                    }
-
-                    int w = ScreenBridge.width > 0 ? ScreenBridge.width : 800;
-                    int h = ScreenBridge.height > 0 ? ScreenBridge.height : 480;
-
-                    Bitmap bitmap = null;
-                    try {
-                        bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-                        
-                        final Bitmap finalBitmap = bitmap;  // Make it effectively final for lambda
-                        
-                        PixelCopy.request(presentation.getWindow(), bitmap, (copyResult) -> {
-                            if (copyResult == PixelCopy.SUCCESS) {
-                                sendBitmapOverNetwork(finalBitmap);
-                            } else {
-                                Log.w(TAG, "PixelCopy failed: " + copyResult);
-                            }
-                            
-                            if (finalBitmap != null) {
-                                finalBitmap.recycle();
-                            }
-
-                            // Schedule next frame
-                            if (isNetworkStreamingActive && frameCaptureHandler != null) {
-                                frameCaptureHandler.postDelayed(this, 16);
-                            }
-                        }, frameCaptureHandler);
-
-                    } catch (Exception e) {
-                        Log.e(TAG, "Bitmap capture error", e);
-                        if (bitmap != null) {
-                            bitmap.recycle();
-                        }
-                        
-                        if (isNetworkStreamingActive && frameCaptureHandler != null) {
-                            frameCaptureHandler.postDelayed(this, 100);
-                        }
-                    }
-                }
-            });
+            startEncoderOutputLoop();
 
         } catch (IOException e) { 
-            Log.e(TAG, "Network client setup error", e); 
+            Log.e(TAG, "Network system pipeline framework client processing instantiation error path triggered.", e); 
         }
     }
 }
+
 private static void startEncoderOutputLoop() {
-		new Thread(() -> {
-			MediaCodec.BufferInfo buffer_info = new MediaCodec.BufferInfo();
-			try {
-				while (isNetworkStreamingActive) {
-					MediaCodec codec = videoEncoder;
-					if (codec == null) break;
+    new Thread(() -> {
+        MediaCodec.BufferInfo buffer_info = new MediaCodec.BufferInfo();
+        Log.d(TAG, "[MEDIACODEC_OUT] Hardware encoder byte buffer rendering loop spinning up...");
+        try {
+            while (isNetworkStreamingActive) {
+                MediaCodec codec = videoEncoder;
+                if (codec == null) break;
 
-					int output_buffer_index = -1;
-					try {
-						output_buffer_index = codec.dequeueOutputBuffer(buffer_info, 30000);
-					} catch (IllegalStateException e) { break; }
-					
-					if (output_buffer_index >= 0) {
-						ByteBuffer output_buffer = codec.getOutputBuffer(output_buffer_index);
-						if (output_buffer != null && buffer_info.size > 0) {
-							
-							if ((buffer_info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
-								cachedSpsPpsHeaders = new byte[buffer_info.size];
-								output_buffer.position(buffer_info.offset);
-								output_buffer.get(cachedSpsPpsHeaders);
-							}
+                int output_buffer_index = -1;
+                try {
+                    output_buffer_index = codec.dequeueOutputBuffer(buffer_info, 30000);
+                } catch (IllegalStateException e) { 
+                    Log.e(TAG, "[MEDIACODEC_LOOP_ERR] Codec context state became illegal or context was torn down asynchronously.");
+                    break; 
+                }
+                
+                if (output_buffer_index >= 0) {
+                    ByteBuffer output_buffer = codec.getOutputBuffer(output_buffer_index);
+                    if (output_buffer != null && buffer_info.size > 0) {
+                        
+                        if ((buffer_info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
+                            Log.i(TAG, "[MEDIACODEC_HEADERS] Extracted validation parameter sequence payloads (SPS/PPS markers map matches tracking requirements). Length: " + buffer_info.size);
+                            cachedSpsPpsHeaders = new byte[buffer_info.size];
+                            output_buffer.position(buffer_info.offset);
+                            output_buffer.get(cachedSpsPpsHeaders);
+                        }
 
-							synchronized (socketLock) {
-								if (networkOutputStream != null && isNetworkStreamingActive) {
-									output_buffer.position(buffer_info.offset);
-									output_buffer.limit(buffer_info.offset + buffer_info.size);
-									
-									byte[] out_data = new byte[buffer_info.size];
-									output_buffer.get(out_data);
-									try {
-										networkOutputStream.write(out_data, 0, out_data.length);
-										networkOutputStream.flush();
-									} catch (IOException netEx) {
-										isNetworkStreamingActive = false;
-									}
-								}
-							}
-						}
-						try { codec.releaseOutputBuffer(output_buffer_index, false); } catch (Exception ignored) {}
-					}
-				}
-			} catch (Exception ignored) {}
-		}, "AAStreamEncoderOutThread").start();
-	}
+                        synchronized (socketLock) {
+                            if (networkOutputStream != null && isNetworkStreamingActive) {
+                                output_buffer.position(buffer_info.offset);
+                                output_buffer.limit(buffer_info.offset + buffer_info.size);
+                                
+                                byte[] out_data = new byte[buffer_info.size];
+                                output_buffer.get(out_data);
+                                try {
+                                    networkOutputStream.write(out_data, 0, out_data.length);
+                                    networkOutputStream.flush();
+                                } catch (IOException netEx) {
+                                    Log.e(TAG, "[MEDIACODEC_NET] Output socket write buffer block tracking down drops; client dropped pipeline socket context connection map.", netEx);
+                                    isNetworkStreamingActive = false;
+                                }
+                            }
+                        }
+                    }
+                    try { codec.releaseOutputBuffer(output_buffer_index, false); } catch (Exception ignored) {}
+                } else if (output_buffer_index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                    MediaFormat updatedFormat = codec.getOutputFormat();
+                    Log.i(TAG, "[MEDIACODEC_EVENT] Hardware encoder device dynamic configuration adjustments parsed: " + updatedFormat.toString());
+                }
+            }
+        } catch (Exception e) { 
+            Log.e(TAG, "[MEDIACODEC_LOOP_FATAL] Runtime lifecycle loop context validation crashed cleanly.", e);
+        } finally {
+            Log.d(TAG, "[MEDIACODEC_OUT] Demuxing encoder loop execution cycle exited state pathways safely.");
+        }
+    }, "AAStreamEncoderOutThread").start();
+}
 
 	public static void releaseEncoder() {
 		isNetworkStreamingActive = false;

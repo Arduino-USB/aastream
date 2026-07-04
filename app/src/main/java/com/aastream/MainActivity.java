@@ -81,12 +81,13 @@ public class MainActivity extends Activity implements DisplayMgr.PlayerStateList
     private int customTrackCounter = 1;
     private Uri currentVideoUri = null;
     private boolean isPlaybackCompleted = false;
-
+	
 	private String formatTime(long ms) {
 	    int totalSeconds = (int) (ms / 1000);
-	    int minutes = totalSeconds / 60;
+	    int hours = totalSeconds / 3600;
+	    int minutes = (totalSeconds % 3600) / 60;
 	    int seconds = totalSeconds % 60;
-	    return String.format(java.util.Locale.US, "%02d:%02d", minutes, seconds);
+	    return String.format(java.util.Locale.US, "%02d:%02d:%02d", hours, minutes, seconds);
 	}
 		
     @Override
@@ -335,8 +336,8 @@ public class MainActivity extends Activity implements DisplayMgr.PlayerStateList
 		
 		seekHandler.removeCallbacks(seekUpdater);
 		mediaSeekBar.setProgress(0);
-		tvCurrentTime.setText("00:00");
-		tvTotalTime.setText("00:00");
+		tvCurrentTime.setText("00:00:00");
+		tvTotalTime.setText("00:00:00");
     }
 
     private boolean checkAndRequestOverlayPermission() {
