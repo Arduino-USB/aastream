@@ -74,25 +74,60 @@ public class DisplayMgr {
     }
     private static PlayerStateListener uiListener = null;
 
-    public DisplayMgr(Context context) {
-        cachedContext = context.getApplicationContext();
-        mRenderThread = new RenderThread();
-        mRenderThread.start();
-        mRenderThread.waitUntilReady();
-    }
+    // Hidden Constructor - Initialization happens explicitly via startPipeline
+    private DisplayMgr() {}
 
     public static void setPlayerStateListener(PlayerStateListener listener) {
         uiListener = listener;
     }
 
-    public static void apply_surface(Surface aaSurface) {
-        if (mRenderThread != null) {
-            mRenderThread.updateAndroidAutoSurface(aaSurface);
-        }
+    /**
+     * Initializes and spawns the entire display architecture using precise AA surface specifications.
+     */
+    public static synchronized void startPipeline(Context context, Surface aaSurface, int width, int height, int dpi) {
+        stopPipeline(); // Safeguard: Clean up any leaking pipelines first
+        
+        cachedContext = context.getApplicationContext();
+        
+        // Pass surface dimensions into the ScreenBridge global state configuration
+        ScreenBridge.width = width;
+        ScreenBridge.height = height;
+
+        mRenderThread = new RenderThread(aaSurface, width, height, dpi);
+        mRenderThread.start();
+        mRenderThread.waitUntilReady();
     }
 
-    public static void create_display(VirtualDisplay legacyDisplay) {
-        Log.i(TAG, "Legacy display architecture superseded by unified Grafika loop.");
+    /**
+     * Completely shuts down, breaks down, and flushes every structural engine in the rendering pipeline.
+     */
+    public static synchronized void stopPipeline() {
+        // 1. Stop streaming engines and Media playback 
+        stopAllMediaEngines();
+
+        // 2. Shut down the Rendering Loop and EGL instances
+        if (mRenderThread != null) {
+            mRenderThread.shutdown();
+            try {
+                mRenderThread.join(1000);
+            } catch (InterruptedException ignored) {}
+            mRenderThread = null;
+        }
+
+        // 3. Clear window presentation contexts safely on the Main Looper UI Thread
+        mainHandler.post(() -> {
+            if (mPresentation != null) {
+                try { mPresentation.dismiss(); } catch (Exception ignored) {}
+                mPresentation = null;
+            }
+            if (mOffscreenDisplay != null) {
+                mOffscreenDisplay.release();
+                mOffscreenDisplay = null;
+            }
+            text_view = null;
+            texture_view = null;
+            nativePlayerView = null;
+        });
     }
 
     public static boolean display_created() {
@@ -104,6 +139,11 @@ public class DisplayMgr {
      * and dual output quad blitting.
      */
     private static class RenderThread extends Thread implements SurfaceTexture.OnFrameAvailableListener {
+        private final Surface mInitialAaSurface;
+        private final int mWidth;
+        private final int mHeight;
+        private final int mDpi;
+
         private EglCore mEglCore;
         private OffscreenSurface mPbufferSurface;
         private FullFrameRect mFullScreenRect;
@@ -121,7 +161,12 @@ public class DisplayMgr {
 
         private final float[] mTmpMatrix = new float[16];
 
-        public RenderThread() {}
+        public RenderThread(Surface aaSurface, int width, int height, int dpi) {
+            this.mInitialAaSurface = aaSurface;
+            this.mWidth = width;
+            this.mHeight = height;
+            this.mDpi = dpi;
+        }
 
         @Override
         public void run() {
@@ -149,11 +194,16 @@ public class DisplayMgr {
             mCameraTexture.setOnFrameAvailableListener(this);
             mPresentationSurface = new Surface(mCameraTexture);
 
-            mainHandler.post(() -> RenderThread.this.setupOffscreenPresentation(mPresentationSurface));
+            // 5. Connect the Android Auto output WindowSurface mapping right away
+            if (mInitialAaSurface != null && mInitialAaSurface.isValid()) {
+                mAndroidAutoWindow = new WindowSurface(mEglCore, mInitialAaSurface, false);
+            }
+
+            mainHandler.post(() -> setupOffscreenPresentation(mPresentationSurface));
 
             Looper.loop();
 
-            // Teardown
+            // Explicit Teardown Context Execution when Looper quits
             releaseGlComponents();
         }
 
@@ -165,62 +215,56 @@ public class DisplayMgr {
             }
         }
 
-	private void setupOffscreenPresentation(Surface surface) {
-		try {
-		    int width = ScreenBridge.width > 0 ? ScreenBridge.width : 1280;
-		    int height = ScreenBridge.height > 0 ? ScreenBridge.height : 720;
-		    mCameraTexture.setDefaultBufferSize(width, height);
+        public void shutdown() {
+            if (mHandler != null) {
+                mHandler.post(() -> {
+                    if (mLooper != null) {
+                        mLooper.quit();
+                    }
+                });
+            }
+        }
 
-		    DisplayManager dm = (DisplayManager) cachedContext.getSystemService(Context.DISPLAY_SERVICE);
+        private void setupOffscreenPresentation(Surface surface) {
+            try {
+                mCameraTexture.setDefaultBufferSize(mWidth, mHeight);
 
-		    // === FIXED FLAGS ===
-		    // VIRTUAL_DISPLAY_FLAG_PRESENTATION is required for Presentation on Android 11+
-		    int flags = DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY
-		            | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
-		            | DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION;
+                DisplayManager dm = (DisplayManager) cachedContext.getSystemService(Context.DISPLAY_SERVICE);
 
-		    mOffscreenDisplay = dm.createVirtualDisplay("AAStreamInternal", width, height, 160,
-		            surface, flags);
+                int flags = DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY
+                        | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                        | DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION;
 
-		    if (mOffscreenDisplay == null || mOffscreenDisplay.getDisplay() == null) {
-		        Log.e(TAG, "Failed to create VirtualDisplay");
-		        return;
-		    }
+                mOffscreenDisplay = dm.createVirtualDisplay("AAStreamInternal", mWidth, mHeight, mDpi,
+                        surface, flags);
 
-		    Context displayContext = cachedContext.createDisplayContext(mOffscreenDisplay.getDisplay());
-		    mPresentation = new Presentation(displayContext, mOffscreenDisplay.getDisplay());
-
-		    if (mPresentation.getWindow() != null) {
-		        mPresentation.getWindow().addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
-		    }
-
-		    mPresentation.setContentView(R.layout.aascreen_layout);
-
-		    text_view = mPresentation.findViewById(R.id.text_view);
-		    texture_view = mPresentation.findViewById(R.id.screen_cast);
-		    nativePlayerView = mPresentation.findViewById(R.id.native_player_view);
-
-		    setupExoPlayer(displayContext);
-		    setupTextureViewListener();
-
-		    mPresentation.show();
-		    DisplayMgr.trigger(lastKnownState);
-		    Log.i(TAG, "Hardware accelerated Presentation successfully instantiated on VirtualDisplay.");
-		} catch (Exception e) {
-		    Log.e(TAG, "Failed creating offscreen presentation window mapping", e);
-		}
-	}
-        public void updateAndroidAutoSurface(final Surface surface) {
-            mHandler.post(() -> {
-                if (mAndroidAutoWindow != null) {
-                    mAndroidAutoWindow.release();
-                    mAndroidAutoWindow = null;
+                if (mOffscreenDisplay == null || mOffscreenDisplay.getDisplay() == null) {
+                    Log.e(TAG, "Failed to create VirtualDisplay");
+                    return;
                 }
-                if (surface != null && surface.isValid()) {
-                    mAndroidAutoWindow = new WindowSurface(mEglCore, surface, false);
-                    Log.d(TAG, "Android Auto WindowSurface attached to Grafika Pipeline.");
+
+                Context displayContext = cachedContext.createDisplayContext(mOffscreenDisplay.getDisplay());
+                mPresentation = new Presentation(displayContext, mOffscreenDisplay.getDisplay());
+
+                if (mPresentation.getWindow() != null) {
+                    mPresentation.getWindow().addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
                 }
-            });
+
+                mPresentation.setContentView(R.layout.aascreen_layout);
+
+                text_view = mPresentation.findViewById(R.id.text_view);
+                texture_view = mPresentation.findViewById(R.id.screen_cast);
+                nativePlayerView = mPresentation.findViewById(R.id.native_player_view);
+
+                setupExoPlayer(displayContext);
+                setupTextureViewListener();
+
+                mPresentation.show();
+                DisplayMgr.trigger(lastKnownState);
+                Log.i(TAG, "Hardware accelerated Presentation successfully instantiated on customized VirtualDisplay.");
+            } catch (Exception e) {
+                Log.e(TAG, "Failed creating offscreen presentation window mapping", e);
+            }
         }
 
         public void updateEncoderSurface(final Surface surface) {
@@ -248,10 +292,10 @@ public class DisplayMgr {
 
                 long timestamp = mCameraTexture.getTimestamp();
 
-                // 1. Draw frame to Android Auto Surface
+                // 1. Draw frame to Android Auto Surface using exact assigned dimension profiles
                 if (mAndroidAutoWindow != null) {
                     mAndroidAutoWindow.makeCurrent();
-                    GLES20.glViewport(0, 0, ScreenBridge.width > 0 ? ScreenBridge.width : 1280, ScreenBridge.height > 0 ? ScreenBridge.height : 720);
+                    GLES20.glViewport(0, 0, mWidth, mHeight);
                     mFullScreenRect.drawFrame(mTextureId, mTmpMatrix);
                     mAndroidAutoWindow.swapBuffers();
                 }
