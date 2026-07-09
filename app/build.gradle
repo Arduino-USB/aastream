@@ -34,4 +34,5 @@ dependencies {
 	implementation "androidx.media3:media3-ui:1.8.0"
 	implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation "androidx.car.app:app:1.4.0"
+	implementation 'androidx.annotation:annotation:1.7.0'
 }

@@ -1,39 +1,40 @@
 package com.aastream.car;
 
-import android.hardware.display.VirtualDisplay;
-import android.view.Surface;
-import android.content.Context;
 import android.app.Presentation;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
-import android.widget.TextView;
-import android.view.TextureView;
-import android.view.WindowManager;
+import android.content.Context;
 import android.graphics.SurfaceTexture;
-import android.graphics.Bitmap;
-import android.view.PixelCopy;
-import android.util.Log;
+import android.hardware.display.DisplayManager;
+import android.hardware.display.VirtualDisplay;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaFormat;
-import android.os.Build;
-import android.view.View;
 import android.net.Uri;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
+import android.opengl.GLES20;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+import android.view.Surface;
+import android.view.TextureView;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.TextView;
 
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MimeTypes;
 import androidx.media3.common.Player;
+import androidx.media3.exoplayer.DefaultRenderersFactory;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
 
-import androidx.media3.exoplayer.DefaultRenderersFactory;
-
 import com.aastream.R;
 import com.aastream.ScreenBridge;
+import com.aastream.grafika.EglCore;
+import com.aastream.grafika.FullFrameRect;
+import com.aastream.grafika.OffscreenSurface;
+import com.aastream.grafika.Texture2dProgram;
+import com.aastream.grafika.WindowSurface;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,490 +45,547 @@ import java.util.Collections;
 import java.util.List;
 
 public class DisplayMgr {
-	
-	public static VirtualDisplay display = null;
-	private static Presentation presentation = null; 
-	private static final String TAG = "AAStreamDebug"; 
-	private static TextView text_view = null;
-	private static TextureView texture_view = null;
-	private static boolean lastKnownState = false;
+    private static final String TAG = "AAStreamDebug";
+    private static final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-	public static PlayerView nativePlayerView = null;
-	public static ExoPlayer exoPlayer = null;
+    // UI elements managed from Presentation
+    private static TextView text_view = null;
+    private static TextureView texture_view = null;
+    public static PlayerView nativePlayerView = null;
+    public static ExoPlayer exoPlayer = null;
+    private static boolean lastKnownState = false;
 
-	private static OutputStream networkOutputStream = null;
-	private static final Object socketLock = new Object();
-	private static volatile boolean isNetworkStreamingActive = false;
+    // Core Pipeline Engines
+    private static RenderThread mRenderThread = null;
+    private static VirtualDisplay mOffscreenDisplay = null;
+    private static Presentation mPresentation = null;
+    private static Context cachedContext = null;
 
-	private static MediaCodec videoEncoder = null;
-	private static Surface encoderInputSurface = null;
-	private static Surface originalDisplaySurface = null;
-	private static Context cachedContext = null;
+    // Networking & Encoding state
+    private static OutputStream networkOutputStream = null;
+    private static final Object socketLock = new Object();
+    private static volatile boolean isNetworkStreamingActive = false;
+    private static MediaCodec videoEncoder = null;
+    private static byte[] cachedSpsPpsHeaders = null;
 
-	private static byte[] cachedSpsPpsHeaders = null;
-	private static final Handler mainHandler = new Handler(Looper.getMainLooper());
-	
-	// Separate thread context to run the frame collection engine away from the UI thread
-	private static HandlerThread frameCaptureThread = null;
-	private static Handler frameCaptureHandler = null;
+    public interface PlayerStateListener {
+        void onPlaybackEnded();
+        void onTracksChanged(List<String> audioTracks);
+    }
+    private static PlayerStateListener uiListener = null;
 
-	public interface PlayerStateListener {
-		void onPlaybackEnded();
-		void onTracksChanged(List<String> audioTracks);
-	}
+    public DisplayMgr(Context context) {
+        cachedContext = context.getApplicationContext();
+        mRenderThread = new RenderThread();
+        mRenderThread.start();
+        mRenderThread.waitUntilReady();
+    }
 
-	private static PlayerStateListener uiListener = null;
+    public static void setPlayerStateListener(PlayerStateListener listener) {
+        uiListener = listener;
+    }
 
-	public DisplayMgr(Context context) {
-		cachedContext = context.getApplicationContext();
-		new Thread(() -> {
-			while(true) {	
-				try { Thread.sleep(500); } catch (Exception ignored) {}
-				if (display != null) {
-					mainHandler.post(() -> manage_screen(cachedContext));
-					break;				
-				}
-			}
-		}).start();
-	}
-		
-	public static void setPlayerStateListener(PlayerStateListener listener) {
-		uiListener = listener;
-	}
-
-	public static void trigger(boolean state){
-		lastKnownState = state;
-		mainHandler.post(() -> {
-			if (text_view != null && texture_view != null && nativePlayerView != null) {
-				if (exoPlayer != null && (exoPlayer.getPlaybackState() == Player.STATE_READY || exoPlayer.getPlaybackState() == Player.STATE_BUFFERING)) {
-					texture_view.setVisibility(View.GONE);
-					text_view.setVisibility(View.GONE);
-					nativePlayerView.setVisibility(View.VISIBLE);
-					return;
-				}
-
-				texture_view.setVisibility(View.VISIBLE);
-				if (state) {
-					text_view.setVisibility(View.GONE);
-					nativePlayerView.setVisibility(View.GONE);
-					texture_view.invalidate();
-				} else {
-					text_view.setVisibility(View.VISIBLE);
-				}
-			}
-		});
-	}
-private static void manage_screen(Context context) {
-    if (display == null) return;
-    try {
-        Context displayContext = context.createDisplayContext(display.getDisplay());
-        presentation = new Presentation(displayContext, display.getDisplay());    
-        
-        if (presentation.getWindow() != null) {
-            presentation.getWindow().addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+    public static void apply_surface(Surface aaSurface) {
+        if (mRenderThread != null) {
+            mRenderThread.updateAndroidAutoSurface(aaSurface);
         }
-        
-        presentation.setContentView(R.layout.aascreen_layout);
-        
-        text_view = presentation.findViewById(R.id.text_view);
-        texture_view = presentation.findViewById(R.id.screen_cast);
-        nativePlayerView = presentation.findViewById(R.id.native_player_view);
+    }
 
-        if (exoPlayer == null) {
-            // Enforce tight video synchronization tolerances via custom RenderersFactory
-            DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(displayContext)
-                    .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
-            
-            // Configure aggressive low-latency buffering to prevent video lagging behind audio
-            androidx.media3.exoplayer.DefaultLoadControl loadControl = new androidx.media3.exoplayer.DefaultLoadControl.Builder()
-                    .setBufferDurationsMs(
-                            1000,  // Min buffer before playback starts
-                            2500,  // Max buffer size
-                            500,   // Buffer required to resume after a re-buffer
-                            500    // Buffer required for initial playback
-                    )
-                    .build();
+    public static void create_display(VirtualDisplay legacyDisplay) {
+        Log.i(TAG, "Legacy display architecture superseded by unified Grafika loop.");
+    }
 
-            exoPlayer = new ExoPlayer.Builder(displayContext, renderersFactory)
-                    .setLoadControl(loadControl)
-                    .build();
-            
-            nativePlayerView.setPlayer(exoPlayer);
+    public static boolean display_created() {
+        return mOffscreenDisplay != null;
+    }
+
+    /**
+     * Dedicated background thread managing EGL configurations, shader lifetimes,
+     * and dual output quad blitting.
+     */
+    private static class RenderThread extends Thread implements SurfaceTexture.OnFrameAvailableListener {
+        private EglCore mEglCore;
+        private OffscreenSurface mPbufferSurface;
+        private FullFrameRect mFullScreenRect;
+        private int mTextureId;
+        private SurfaceTexture mCameraTexture;
+        private Surface mPresentationSurface;
+
+        private WindowSurface mAndroidAutoWindow;
+        private WindowSurface mEncoderWindow;
+
+        private final Object mReadyLock = new Object();
+        private boolean mReady = false;
+        private Handler mHandler;
+        private Looper mLooper;
+
+        private final float[] mTmpMatrix = new float[16];
+
+        public RenderThread() {}
+
+        @Override
+        public void run() {
+            Looper.prepare();
+            synchronized (mReadyLock) {
+                mLooper = Looper.myLooper();
+                mHandler = new Handler(mLooper);
+                mReady = true;
+                mReadyLock.notifyAll();
+            }
+
+            // 1. Initialize core display structures
+            mEglCore = new EglCore(null, EglCore.FLAG_RECORDABLE);
+
+            // 2. Create an initial Offscreen pbuffer surface to fulfill OpenGL requirements
+            mPbufferSurface = new OffscreenSurface(mEglCore, 1, 1);
+            mPbufferSurface.makeCurrent();
+
+            // 3. Compile and build the Texture2dProgram shaders safely inside the current context
+            mFullScreenRect = new FullFrameRect(new Texture2dProgram(Texture2dProgram.ProgramType.TEXTURE_EXT));
+            mTextureId = mFullScreenRect.getProgram().createTextureObject();
+
+            // 4. Construct SurfaceTexture and associate it with our Presentation
+            mCameraTexture = new SurfaceTexture(mTextureId);
+            mCameraTexture.setOnFrameAvailableListener(this);
+            mPresentationSurface = new Surface(mCameraTexture);
+
+            mainHandler.post(() -> RenderThread.this.setupOffscreenPresentation(mPresentationSurface));
+
+            Looper.loop();
+
+            // Teardown
+            releaseGlComponents();
         }
 
+        public void waitUntilReady() {
+            synchronized (mReadyLock) {
+                while (!mReady) {
+                    try { mReadyLock.wait(); } catch (InterruptedException ignored) {}
+                }
+            }
+        }
+
+	private void setupOffscreenPresentation(Surface surface) {
+		try {
+		    int width = ScreenBridge.width > 0 ? ScreenBridge.width : 1280;
+		    int height = ScreenBridge.height > 0 ? ScreenBridge.height : 720;
+		    mCameraTexture.setDefaultBufferSize(width, height);
+
+		    DisplayManager dm = (DisplayManager) cachedContext.getSystemService(Context.DISPLAY_SERVICE);
+
+		    // === FIXED FLAGS ===
+		    // VIRTUAL_DISPLAY_FLAG_PRESENTATION is required for Presentation on Android 11+
+		    int flags = DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY
+		            | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+		            | DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION;
+
+		    mOffscreenDisplay = dm.createVirtualDisplay("AAStreamInternal", width, height, 160,
+		            surface, flags);
+
+		    if (mOffscreenDisplay == null || mOffscreenDisplay.getDisplay() == null) {
+		        Log.e(TAG, "Failed to create VirtualDisplay");
+		        return;
+		    }
+
+		    Context displayContext = cachedContext.createDisplayContext(mOffscreenDisplay.getDisplay());
+		    mPresentation = new Presentation(displayContext, mOffscreenDisplay.getDisplay());
+
+		    if (mPresentation.getWindow() != null) {
+		        mPresentation.getWindow().addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+		    }
+
+		    mPresentation.setContentView(R.layout.aascreen_layout);
+
+		    text_view = mPresentation.findViewById(R.id.text_view);
+		    texture_view = mPresentation.findViewById(R.id.screen_cast);
+		    nativePlayerView = mPresentation.findViewById(R.id.native_player_view);
+
+		    setupExoPlayer(displayContext);
+		    setupTextureViewListener();
+
+		    mPresentation.show();
+		    DisplayMgr.trigger(lastKnownState);
+		    Log.i(TAG, "Hardware accelerated Presentation successfully instantiated on VirtualDisplay.");
+		} catch (Exception e) {
+		    Log.e(TAG, "Failed creating offscreen presentation window mapping", e);
+		}
+	}
+        public void updateAndroidAutoSurface(final Surface surface) {
+            mHandler.post(() -> {
+                if (mAndroidAutoWindow != null) {
+                    mAndroidAutoWindow.release();
+                    mAndroidAutoWindow = null;
+                }
+                if (surface != null && surface.isValid()) {
+                    mAndroidAutoWindow = new WindowSurface(mEglCore, surface, false);
+                    Log.d(TAG, "Android Auto WindowSurface attached to Grafika Pipeline.");
+                }
+            });
+        }
+
+        public void updateEncoderSurface(final Surface surface) {
+            mHandler.post(() -> {
+                if (mEncoderWindow != null) {
+                    mEncoderWindow.release();
+                    mEncoderWindow = null;
+                }
+                if (surface != null && surface.isValid()) {
+                    mEncoderWindow = new WindowSurface(mEglCore, surface, true);
+                    Log.d(TAG, "Encoder Input WindowSurface attached to Grafika Pipeline.");
+                }
+            });
+        }
+
+        @Override
+        public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+            mHandler.post(() -> {
+                if (mEglCore == null || mCameraTexture == null) return;
+
+                // Bind offscreen target texture before updating image data
+                mPbufferSurface.makeCurrent();
+                mCameraTexture.updateTexImage();
+                mCameraTexture.getTransformMatrix(mTmpMatrix);
+
+                long timestamp = mCameraTexture.getTimestamp();
+
+                // 1. Draw frame to Android Auto Surface
+                if (mAndroidAutoWindow != null) {
+                    mAndroidAutoWindow.makeCurrent();
+                    GLES20.glViewport(0, 0, ScreenBridge.width > 0 ? ScreenBridge.width : 1280, ScreenBridge.height > 0 ? ScreenBridge.height : 720);
+                    mFullScreenRect.drawFrame(mTextureId, mTmpMatrix);
+                    mAndroidAutoWindow.swapBuffers();
+                }
+
+                // 2. Mirror frame identically to MediaCodec Encoder Surface
+                if (mEncoderWindow != null && isNetworkStreamingActive) {
+                    mEncoderWindow.makeCurrent();
+                    int w = ScreenBridge.width > 0 ? ScreenBridge.width : 800;
+                    int h = ScreenBridge.height > 0 ? ScreenBridge.height : 480;
+                    GLES20.glViewport(0, 0, w, h);
+                    mFullScreenRect.drawFrame(mTextureId, mTmpMatrix);
+                    mEncoderWindow.setPresentationTime(timestamp);
+                    mEncoderWindow.swapBuffers();
+                }
+            });
+        }
+
+        private void releaseGlComponents() {
+            if (mAndroidAutoWindow != null) { mAndroidAutoWindow.release(); mAndroidAutoWindow = null; }
+            if (mEncoderWindow != null) { mEncoderWindow.release(); mEncoderWindow = null; }
+            if (mPresentationSurface != null) { mPresentationSurface.release(); mPresentationSurface = null; }
+            if (mCameraTexture != null) { mCameraTexture.release(); mCameraTexture = null; }
+            if (mFullScreenRect != null) { mFullScreenRect.release(false); mFullScreenRect = null; }
+            if (mPbufferSurface != null) { mPbufferSurface.release(); mPbufferSurface = null; }
+            if (mEglCore != null) { mEglCore.release(); mEglCore = null; }
+        }
+    }
+
+    private static void setupExoPlayer(Context context) {
+        if (exoPlayer != null) return;
+        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context)
+                .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
+        androidx.media3.exoplayer.DefaultLoadControl loadControl = new androidx.media3.exoplayer.DefaultLoadControl.Builder()
+                .setBufferDurationsMs(1000, 2500, 500, 500)
+                .build();
+        exoPlayer = new ExoPlayer.Builder(context, renderersFactory)
+                .setLoadControl(loadControl)
+                .build();
+        nativePlayerView.setPlayer(exoPlayer);
+    }
+
+    private static void setupTextureViewListener() {
         texture_view.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
             @Override
             public void onSurfaceTextureAvailable(SurfaceTexture st, int w, int h) {
                 st.setDefaultBufferSize(w, h);
-                originalDisplaySurface = new Surface(st);
-                
-                ScreenBridge.surface = originalDisplaySurface;
+                Surface origSurface = new Surface(st);
+                ScreenBridge.surface = origSurface;
                 ScreenBridge.width = w;
                 ScreenBridge.height = h;
-
                 if (ScreenBridge.service != null) {
-                    ScreenBridge.service.start_display_if_possible(); 
+                    ScreenBridge.service.start_display_if_possible();
                 }
             }
             @Override public void onSurfaceTextureSizeChanged(SurfaceTexture st, int w, int h) {
                 st.setDefaultBufferSize(w, h);
-                ScreenBridge.width = w; 
+                ScreenBridge.width = w;
                 ScreenBridge.height = h;
             }
             @Override public boolean onSurfaceTextureDestroyed(SurfaceTexture st) {
-                originalDisplaySurface = null;
-                ScreenBridge.surface = null; 
-                DisplayMgr.trigger(false); 
+                ScreenBridge.surface = null;
+                DisplayMgr.trigger(false);
                 return true;
             }
-            @Override public void onSurfaceTextureUpdated(SurfaceTexture st) {
+            @Override public void onSurfaceTextureUpdated(SurfaceTexture st) {}
+        });
+    }
+
+    public static void trigger(boolean state) {
+        lastKnownState = state;
+        mainHandler.post(() -> {
+            if (text_view != null && texture_view != null && nativePlayerView != null) {
+                if (exoPlayer != null && (exoPlayer.getPlaybackState() == Player.STATE_READY || exoPlayer.getPlaybackState() == Player.STATE_BUFFERING)) {
+                    texture_view.setVisibility(View.GONE);
+                    text_view.setVisibility(View.GONE);
+                    nativePlayerView.setVisibility(View.VISIBLE);
+                    return;
+                }
+                texture_view.setVisibility(View.VISIBLE);
+                if (state) {
+                    text_view.setVisibility(View.GONE);
+                    nativePlayerView.setVisibility(View.GONE);
+                    texture_view.invalidate();
+                } else {
+                    text_view.setVisibility(View.VISIBLE);
+                }
             }
         });
-
-        presentation.show(); 
-        trigger(lastKnownState);
-
-    } catch (Exception e) { Log.e(TAG, "Presentation setup error", e); }
-}
-// Add at class level
-private static MediaCodec createAndConfigureEncoder(int suggestedWidth, int suggestedHeight) {
-    try {
-        // Find the best encoder
-        MediaCodecList codecList = new MediaCodecList(MediaCodecList.REGULAR_CODECS);
-        String encoderName = null;
-
-        for (MediaCodecInfo info : codecList.getCodecInfos()) {
-            if (!info.isEncoder()) continue;
-            for (String type : info.getSupportedTypes()) {
-                if (type.equalsIgnoreCase(MediaFormat.MIMETYPE_VIDEO_AVC)) {
-                    encoderName = info.getName();
-                    Log.i(TAG, "[Encoder] Found AVC encoder: " + encoderName);
-                    break;
-                }
-            }
-            if (encoderName != null) break;
-        }
-
-        if (encoderName == null) {
-            Log.e(TAG, "[Encoder] No AVC encoder found!");
-            return null;
-        }
-
-        MediaCodec encoder = MediaCodec.createByCodecName(encoderName);
-        MediaCodecInfo info = encoder.getCodecInfo();
-        MediaCodecInfo.CodecCapabilities caps = info.getCapabilitiesForType(MediaFormat.MIMETYPE_VIDEO_AVC);
-        MediaCodecInfo.VideoCapabilities videoCaps = caps.getVideoCapabilities();
-
-        if (videoCaps == null) {
-            Log.e(TAG, "[Encoder] No VideoCapabilities");
-            encoder.release();
-            return null;
-        }
-
-        // Clamp to supported ranges
-        int width = videoCaps.getSupportedWidths().clamp(suggestedWidth);
-        int height = videoCaps.getSupportedHeightsFor(width).clamp(suggestedHeight);
-
-        // Ensure even and minimum alignment
-        width = Math.max(320, (width / 16) * 16);   // many encoders want multiple of 16
-        height = Math.max(240, (height / 16) * 16);
-
-        Log.i(TAG, "[Encoder] Using supported resolution: " + width + "x" + height);
-
-        MediaFormat format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height);
-        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-        format.setInteger(MediaFormat.KEY_BIT_RATE, Math.max(2000000, width * height * 3)); // higher bitrate often helps
-        format.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
-        format.setLong(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER, 33333); // ~30fps
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            format.setInteger(MediaFormat.KEY_LATENCY, 0);
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            format.setInteger(MediaFormat.KEY_LOW_LATENCY, 1);
-        }
-
-        encoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-        encoderInputSurface = encoder.createInputSurface();
-        encoder.start();
-
-        Log.i(TAG, "[Encoder] ✅ Successfully configured using proper capabilities");
-        return encoder;
-
-    } catch (Exception e) {
-        Log.e(TAG, "[Encoder] Failed to configure with capabilities", e);
-        return null;
     }
-}
-private static void sendBitmapOverNetwork(Bitmap bitmap) {
-    if (bitmap == null || networkOutputStream == null) return;
-    
-    try {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 65, baos);
-        byte[] data = baos.toByteArray();
-        
+
+    public static void handleNetworkClient(Socket clientSocket) {
         synchronized (socketLock) {
-            if (networkOutputStream != null && isNetworkStreamingActive) {
-                DataOutputStream dos = new DataOutputStream(networkOutputStream);
-                dos.writeInt(data.length);
-                dos.write(data);
-                dos.flush();
-            }
-        }
-    } catch (IOException e) {
-        Log.e(TAG, "Failed to send bitmap over network", e);
-        isNetworkStreamingActive = false;
-    }
-}
-public static void handleNetworkClient(Socket clientSocket) {
-    synchronized (socketLock) {
-        try {
-            Log.i(TAG, "[Network] Client connected. Migrating framework directly onto hardware MediaCodec pipeline...");
-            
-            if (networkOutputStream != null) {
-                try { networkOutputStream.close(); } catch (IOException ignored) {}
-            }
-            networkOutputStream = clientSocket.getOutputStream();
-            isNetworkStreamingActive = true;
-            
-            int targetWidth = ScreenBridge.width > 0 ? ScreenBridge.width : 800;
-            int targetHeight = ScreenBridge.height > 0 ? ScreenBridge.height : 480;
-            
-            videoEncoder = createAndConfigureEncoder(targetWidth, targetHeight);
-            if (videoEncoder == null) {
-                Log.e(TAG, "[Network_Critical] Pipeline setup terminated due to MediaCodec initialization runtime errors.");
-                isNetworkStreamingActive = false;
-                return;
-            }
-
-            // Redirect rendering target context straight over onto the MediaCodec input surface
-            if (encoderInputSurface != null) {
-                Log.d(TAG, "[Network] Intercepting rendering context - routing VirtualDisplay frame tree layer output directly to MediaCodec input surface targets.");
-                apply_surface(encoderInputSurface);
-            }
-
-            startEncoderOutputLoop();
-
-        } catch (IOException e) { 
-            Log.e(TAG, "Network system pipeline framework client processing instantiation error path triggered.", e); 
-        }
-    }
-}
-
-private static void startEncoderOutputLoop() {
-    new Thread(() -> {
-        MediaCodec.BufferInfo buffer_info = new MediaCodec.BufferInfo();
-        Log.d(TAG, "[MEDIACODEC_OUT] Hardware encoder byte buffer rendering loop spinning up...");
-        try {
-            while (isNetworkStreamingActive) {
-                MediaCodec codec = videoEncoder;
-                if (codec == null) break;
-
-                int output_buffer_index = -1;
-                try {
-                    output_buffer_index = codec.dequeueOutputBuffer(buffer_info, 30000);
-                } catch (IllegalStateException e) { 
-                    Log.e(TAG, "[MEDIACODEC_LOOP_ERR] Codec context state became illegal or context was torn down asynchronously.");
-                    break; 
+            try {
+                Log.i(TAG, "[Network] Connecting client target directly to pipeline blit structure...");
+                if (networkOutputStream != null) {
+                    try { networkOutputStream.close(); } catch (IOException ignored) {}
                 }
-                
-                if (output_buffer_index >= 0) {
-                    ByteBuffer output_buffer = codec.getOutputBuffer(output_buffer_index);
-                    if (output_buffer != null && buffer_info.size > 0) {
-                        
-                        if ((buffer_info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
-                            Log.i(TAG, "[MEDIACODEC_HEADERS] Extracted validation parameter sequence payloads (SPS/PPS markers map matches tracking requirements). Length: " + buffer_info.size);
-                            cachedSpsPpsHeaders = new byte[buffer_info.size];
-                            output_buffer.position(buffer_info.offset);
-                            output_buffer.get(cachedSpsPpsHeaders);
-                        }
+                networkOutputStream = clientSocket.getOutputStream();
+                isNetworkStreamingActive = true;
 
-                        synchronized (socketLock) {
-                            if (networkOutputStream != null && isNetworkStreamingActive) {
+                int targetWidth = ScreenBridge.width > 0 ? ScreenBridge.width : 800;
+                int targetHeight = ScreenBridge.height > 0 ? ScreenBridge.height : 480;
+
+                videoEncoder = createAndConfigureEncoder(targetWidth, targetHeight);
+                if (videoEncoder == null) {
+                    isNetworkStreamingActive = false;
+                    return;
+                }
+
+                startEncoderOutputLoop();
+            } catch (IOException e) {
+                Log.e(TAG, "Failed negotiating baseline network client sockets", e);
+            }
+        }
+    }
+
+    private static MediaCodec createAndConfigureEncoder(int suggestedWidth, int suggestedHeight) {
+        try {
+            MediaCodecList codecList = new MediaCodecList(MediaCodecList.REGULAR_CODECS);
+            String encoderName = null;
+            for (MediaCodecInfo info : codecList.getCodecInfos()) {
+                if (!info.isEncoder()) continue;
+                for (String type : info.getSupportedTypes()) {
+                    if (type.equalsIgnoreCase(MediaFormat.MIMETYPE_VIDEO_AVC)) {
+                        encoderName = info.getName();
+                        break;
+                    }
+                }
+                if (encoderName != null) break;
+            }
+            if (encoderName == null) return null;
+
+            MediaCodec encoder = MediaCodec.createByCodecName(encoderName);
+            MediaCodecInfo.VideoCapabilities videoCaps = encoder.getCodecInfo().getCapabilitiesForType(MediaFormat.MIMETYPE_VIDEO_AVC).getVideoCapabilities();
+
+            int width = videoCaps.getSupportedWidths().clamp(suggestedWidth);
+            int height = videoCaps.getSupportedHeightsFor(width).clamp(suggestedHeight);
+            width = Math.max(320, (width / 16) * 16);
+            height = Math.max(240, (height / 16) * 16);
+
+            MediaFormat format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height);
+            format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
+            format.setInteger(MediaFormat.KEY_BIT_RATE, Math.max(2000000, width * height * 3));
+            format.setInteger(MediaFormat.KEY_FRAME_RATE, 60);
+            format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
+            format.setLong(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER, 16666);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) format.setInteger(MediaFormat.KEY_LATENCY, 0);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) format.setInteger(MediaFormat.KEY_LOW_LATENCY, 1);
+
+            encoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+            Surface inputSurface = encoder.createInputSurface();
+
+            if (mRenderThread != null) {
+                mRenderThread.updateEncoderSurface(inputSurface);
+            }
+
+            encoder.start();
+            return encoder;
+        } catch (Exception e) {
+            Log.e(TAG, "Unable to spin up independent MediaCodec pipeline configuration", e);
+            return null;
+        }
+    }
+
+    private static void startEncoderOutputLoop() {
+        new Thread(() -> {
+            MediaCodec.BufferInfo buffer_info = new MediaCodec.BufferInfo();
+            try {
+                while (isNetworkStreamingActive) {
+                    MediaCodec codec = videoEncoder;
+                    if (codec == null) break;
+
+                    int output_buffer_index = -1;
+                    try {
+                        output_buffer_index = codec.dequeueOutputBuffer(buffer_info, 30000);
+                    } catch (IllegalStateException e) { break; }
+
+                    if (output_buffer_index >= 0) {
+                        ByteBuffer output_buffer = codec.getOutputBuffer(output_buffer_index);
+                        if (output_buffer != null && buffer_info.size > 0) {
+                            if ((buffer_info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
+                                cachedSpsPpsHeaders = new byte[buffer_info.size];
                                 output_buffer.position(buffer_info.offset);
-                                output_buffer.limit(buffer_info.offset + buffer_info.size);
-                                
-                                byte[] out_data = new byte[buffer_info.size];
-                                output_buffer.get(out_data);
-                                try {
-                                    networkOutputStream.write(out_data, 0, out_data.length);
-                                    networkOutputStream.flush();
-                                } catch (IOException netEx) {
-                                    Log.e(TAG, "[MEDIACODEC_NET] Output socket write buffer block tracking down drops; client dropped pipeline socket context connection map.", netEx);
-                                    isNetworkStreamingActive = false;
+                                output_buffer.get(cachedSpsPpsHeaders);
+                            }
+                            synchronized (socketLock) {
+                                if (networkOutputStream != null && isNetworkStreamingActive) {
+                                    output_buffer.position(buffer_info.offset);
+                                    output_buffer.limit(buffer_info.offset + buffer_info.size);
+                                    byte[] out_data = new byte[buffer_info.size];
+                                    output_buffer.get(out_data);
+                                    try {
+                                        networkOutputStream.write(out_data, 0, out_data.length);
+                                        networkOutputStream.flush();
+                                    } catch (IOException netEx) {
+                                        isNetworkStreamingActive = false;
+                                    }
                                 }
                             }
                         }
+                        try { codec.releaseOutputBuffer(output_buffer_index, false); } catch (Exception ignored) {}
                     }
-                    try { codec.releaseOutputBuffer(output_buffer_index, false); } catch (Exception ignored) {}
-                } else if (output_buffer_index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                    MediaFormat updatedFormat = codec.getOutputFormat();
-                    Log.i(TAG, "[MEDIACODEC_EVENT] Hardware encoder device dynamic configuration adjustments parsed: " + updatedFormat.toString());
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Encoder streaming task intercepted unexpected state change", e);
+            }
+        }, "AAStreamEncoderOutThread").start();
+    }
+
+    public static void releaseEncoder() {
+        isNetworkStreamingActive = false;
+        if (mRenderThread != null) {
+            mRenderThread.updateEncoderSurface(null);
+        }
+        if (videoEncoder != null) {
+            try { videoEncoder.stop(); } catch (Exception ignored) {}
+            try { videoEncoder.release(); } catch (Exception ignored) {}
+            videoEncoder = null;
+        }
+    }
+
+    public static void stopAllMediaEngines() {
+        mainHandler.post(() -> {
+            releaseEncoder();
+            synchronized (socketLock) {
+                if (networkOutputStream != null) {
+                    try { networkOutputStream.close(); } catch (Exception ignored) {}
+                    networkOutputStream = null;
                 }
             }
-        } catch (Exception e) { 
-            Log.e(TAG, "[MEDIACODEC_LOOP_FATAL] Runtime lifecycle loop context validation crashed cleanly.", e);
-        } finally {
-            Log.d(TAG, "[MEDIACODEC_OUT] Demuxing encoder loop execution cycle exited state pathways safely.");
-        }
-    }, "AAStreamEncoderOutThread").start();
-}
+            if (exoPlayer != null) { exoPlayer.stop(); exoPlayer.clearMediaItems(); }
+        });
+    }
 
-	public static void releaseEncoder() {
-		isNetworkStreamingActive = false;
-		
-		if (frameCaptureThread != null) {
-			frameCaptureThread.quitSafely();
-			frameCaptureThread = null;
-			frameCaptureHandler = null;
-		}
+    public static void playNativeVideoFile(Uri uri) {
+        mainHandler.post(() -> {
+            if (exoPlayer == null) return;
+            if (text_view != null) text_view.setVisibility(View.GONE);
+            if (texture_view != null) texture_view.setVisibility(View.GONE);
+            if (nativePlayerView != null) nativePlayerView.setVisibility(View.VISIBLE);
 
-		if (videoEncoder != null) {
-			try { videoEncoder.stop(); } catch (Exception ignored) {}
-			try { videoEncoder.release(); } catch (Exception ignored) {}
-			videoEncoder = null;
-		}
-		if (encoderInputSurface != null) {
-			encoderInputSurface.release();
-			encoderInputSurface = null;
-		}
-	}
+            MediaItem mediaItem = MediaItem.fromUri(uri);
+            exoPlayer.setMediaItem(mediaItem);
+            exoPlayer.addListener(new Player.Listener() {
+                @Override
+                public void onPlaybackStateChanged(int state) {
+                    if (state == Player.STATE_ENDED && uiListener != null) {
+                        uiListener.onPlaybackEnded();
+                    }
+                }
+                @Override
+                public void onTracksChanged(androidx.media3.common.Tracks tracks) {
+                    if (uiListener == null) return;
+                    List<String> audioTrackNames = new ArrayList<>();
+                    for (androidx.media3.common.Tracks.Group group : tracks.getGroups()) {
+                        if (group.getType() == androidx.media3.common.C.TRACK_TYPE_AUDIO) {
+                            for (int i = 0; i < group.length; i++) {
+                                androidx.media3.common.Format format = group.getTrackFormat(i);
+                                String name = format.language != null ? format.language : "Audio Track " + (audioTrackNames.size() + 1);
+                                audioTrackNames.add(name);
+                            }
+                        }
+                    }
+                    uiListener.onTracksChanged(audioTrackNames);
+                }
+            });
+            exoPlayer.prepare();
+            exoPlayer.play();
+        });
+    }
 
-	public static void stopAllMediaEngines() {
-		mainHandler.post(() -> {
-			releaseEncoder();
-			synchronized (socketLock) {
-				if (networkOutputStream != null) {
-					try { networkOutputStream.close(); } catch (Exception ignored) {}
-					networkOutputStream = null;
-				}
-			}
-			if (exoPlayer != null) { exoPlayer.stop(); exoPlayer.clearMediaItems(); }
-		});
-	}
+    public static void stopVideoPlaybackEngine() {
+        mainHandler.post(() -> {
+            if (exoPlayer != null) { exoPlayer.stop(); exoPlayer.clearMediaItems(); }
+            if (nativePlayerView != null) nativePlayerView.setVisibility(View.GONE);
+            trigger(lastKnownState);
+        });
+    }
 
-	public static void create_display(VirtualDisplay incoming_display) { display = incoming_display; }
-	public static boolean display_created(){ return display != null; }
-	public static void apply_surface(Surface surface) {
-		originalDisplaySurface = surface;
-		if (display != null) {
-			display.setSurface(surface);
-			if (presentation != null && !presentation.isShowing()) {
-				try { presentation.show(); } catch (Exception ignored) {}
-			}
-		}
-	}
+    public static void injectExternalSubtitles(Uri srtUri) {
+        mainHandler.post(() -> {
+            if (exoPlayer == null) return;
+            MediaItem currentItem = exoPlayer.getCurrentMediaItem();
+            if (currentItem == null) return;
+            long savedPlaybackPosition = exoPlayer.getCurrentPosition();
+            boolean wasPlaying = exoPlayer.getPlayWhenReady();
 
-	public static void playNativeVideoFile(Uri uri) {
-		mainHandler.post(() -> {
-			if (exoPlayer == null) return;
+            MediaItem.SubtitleConfiguration subConfig = new MediaItem.SubtitleConfiguration.Builder(srtUri)
+                    .setMimeType(MimeTypes.APPLICATION_SUBRIP)
+                    .setSelectionFlags(androidx.media3.common.C.SELECTION_FLAG_DEFAULT)
+                    .build();
 
-			if (text_view != null) text_view.setVisibility(View.GONE);
-			if (texture_view != null) texture_view.setVisibility(View.GONE);
-			if (nativePlayerView != null) nativePlayerView.setVisibility(View.VISIBLE);
+            MediaItem extendedItem = currentItem.buildUpon()
+                    .setSubtitleConfigurations(Collections.singletonList(subConfig))
+                    .build();
 
-			MediaItem mediaItem = MediaItem.fromUri(uri);
-			exoPlayer.setMediaItem(mediaItem);
-			
-			exoPlayer.addListener(new Player.Listener() {
-				@Override
-				public void onPlaybackStateChanged(int state) {
-					if (state == Player.STATE_ENDED && uiListener != null) {
-						uiListener.onPlaybackEnded();
-					}
-				}
+            exoPlayer.setMediaItem(extendedItem);
+            exoPlayer.prepare();
+            exoPlayer.seekTo(savedPlaybackPosition);
+            exoPlayer.setPlayWhenReady(wasPlaying);
+        });
+    }
 
-				@Override
-				public void onTracksChanged(androidx.media3.common.Tracks tracks) {
-					if (uiListener == null) return;
-					List<String> audioTrackNames = new ArrayList<>();
-					for (androidx.media3.common.Tracks.Group group : tracks.getGroups()) {
-						if (group.getType() == androidx.media3.common.C.TRACK_TYPE_AUDIO) {
-							for (int i = 0; i < group.length; i++) {
-								androidx.media3.common.Format format = group.getTrackFormat(i);
-								String name = format.language != null ? format.language : "Audio Track " + (audioTrackNames.size() + 1);
-								audioTrackNames.add(name);
-							}
-						}
-					}
-					uiListener.onTracksChanged(audioTrackNames);
-				}
-			});
+    public static void clearSubtitles() {
+        mainHandler.post(() -> {
+            if (exoPlayer == null) return;
+            exoPlayer.setTrackSelectionParameters(
+                    exoPlayer.getTrackSelectionParameters().buildUpon()
+                            .clearOverridesOfType(androidx.media3.common.C.TRACK_TYPE_TEXT).build()
+            );
+        });
+    }
 
-			exoPlayer.prepare();
-			exoPlayer.play();
-		});
-	}
-
-	public static void stopVideoPlaybackEngine() {
-		mainHandler.post(() -> {
-			if (exoPlayer != null) { exoPlayer.stop(); exoPlayer.clearMediaItems(); }
-			if (nativePlayerView != null) nativePlayerView.setVisibility(View.GONE);
-			trigger(lastKnownState);
-		});
-	}
-
-	public static void injectExternalSubtitles(Uri srtUri) {
-		mainHandler.post(() -> {
-			if (exoPlayer == null) return;
-			MediaItem currentItem = exoPlayer.getCurrentMediaItem();
-			if (currentItem == null) return;
-
-			long savedPlaybackPosition = exoPlayer.getCurrentPosition();
-			boolean wasPlaying = exoPlayer.getPlayWhenReady();
-
-			MediaItem.SubtitleConfiguration subConfig = new MediaItem.SubtitleConfiguration.Builder(srtUri)
-					.setMimeType(MimeTypes.APPLICATION_SUBRIP)
-					.setSelectionFlags(androidx.media3.common.C.SELECTION_FLAG_DEFAULT)
-					.build();
-
-			MediaItem extendedItem = currentItem.buildUpon()
-					.setSubtitleConfigurations(Collections.singletonList(subConfig))
-					.build();
-
-			exoPlayer.setMediaItem(extendedItem);
-			exoPlayer.prepare();
-			exoPlayer.seekTo(savedPlaybackPosition);
-			exoPlayer.setPlayWhenReady(wasPlaying);
-		});
-	}
-
-	public static void clearSubtitles() {
-		mainHandler.post(() -> {
-			if (exoPlayer == null) return;
-			exoPlayer.setTrackSelectionParameters(
-					exoPlayer.getTrackSelectionParameters()
-							.buildUpon()
-							.clearOverridesOfType(androidx.media3.common.C.TRACK_TYPE_TEXT)
-							.build()
-			);
-		});
-	}
-
-	public static void selectAudioTrack(int trackIndex) {
-		mainHandler.post(() -> {
-			if (exoPlayer == null) return;
-			androidx.media3.common.Tracks currentTracks = exoPlayer.getCurrentTracks();
-			int currentAudioGlobalIndex = 0;
-
-			for (androidx.media3.common.Tracks.Group group : currentTracks.getGroups()) {
-				if (group.getType() == androidx.media3.common.C.TRACK_TYPE_AUDIO) {
-					for (int i = 0; i < group.length; i++) {
-						if (currentAudioGlobalIndex == trackIndex) {
-							exoPlayer.setTrackSelectionParameters(
-									exoPlayer.getTrackSelectionParameters()
-											.buildUpon()
-											.setOverrideForType(new androidx.media3.common.TrackSelectionOverride(group.getMediaTrackGroup(), i))
-											.build()
-							);
-							return;
-						}
-						currentAudioGlobalIndex++;
-					}
-				}
-			}
-		});
-	}
+    public static void selectAudioTrack(int trackIndex) {
+        mainHandler.post(() -> {
+            if (exoPlayer == null) return;
+            androidx.media3.common.Tracks currentTracks = exoPlayer.getCurrentTracks();
+            int currentAudioGlobalIndex = 0;
+            for (androidx.media3.common.Tracks.Group group : currentTracks.getGroups()) {
+                if (group.getType() == androidx.media3.common.C.TRACK_TYPE_AUDIO) {
+                    for (int i = 0; i < group.length; i++) {
+                        if (currentAudioGlobalIndex == trackIndex) {
+                            exoPlayer.setTrackSelectionParameters(
+                                    exoPlayer.getTrackSelectionParameters().buildUpon()
+                                            .setOverrideForType(new androidx.media3.common.TrackSelectionOverride(group.getMediaTrackGroup(), i))
+                                            .build()
+                            );
+                            return;
+                        }
+                        currentAudioGlobalIndex++;
+                    }
+                }
+            }
+        });
+    }
 }
