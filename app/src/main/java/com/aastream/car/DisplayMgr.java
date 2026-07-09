@@ -73,6 +73,8 @@ public class DisplayMgr {
     private static ServerSocket mServerSocket = null;
     private static Thread mServerThread = null;
     private static final int PORT = 6741;
+	
+	private static final java.util.concurrent.atomic.AtomicInteger pendingNetworkWrites = new java.util.concurrent.atomic.AtomicInteger(0);
 
     public interface PlayerStateListener {
         void onPlaybackEnded();
@@ -82,6 +84,11 @@ public class DisplayMgr {
 
     // Hidden Constructor - Initialization happens explicitly via startPipeline
     private DisplayMgr() {}
+	
+	public static boolean isNetworkBufferChoked() {
+		// If more than 2 frames are stuck waiting for the TCP socket layer, choke input
+		return pendingNetworkWrites.get() > 2;
+	}
 
     public static void setPlayerStateListener(PlayerStateListener listener) {
         uiListener = listener;
@@ -340,15 +347,20 @@ public class DisplayMgr {
                 }
 
                 // 2. Mirror frame identically to MediaCodec Encoder Surface
-                if (mEncoderWindow != null && isNetworkStreamingActive) {
-                    mEncoderWindow.makeCurrent();
-                    int w = ScreenBridge.width > 0 ? ScreenBridge.width : 800;
-                    int h = ScreenBridge.height > 0 ? ScreenBridge.height : 480;
-                    GLES20.glViewport(0, 0, w, h);
-                    mFullScreenRect.drawFrame(mTextureId, mTmpMatrix);
-                    mEncoderWindow.setPresentationTime(timestamp);
-                    mEncoderWindow.swapBuffers();
-                }
+				if (mEncoderWindow != null && isNetworkStreamingActive) {
+					// Check custom threshold flag before encoding (see next section)
+					if (!isNetworkBufferChoked()) { 
+						mEncoderWindow.makeCurrent();
+						int w = ScreenBridge.width > 0 ? ScreenBridge.width : 800;
+						int h = ScreenBridge.height > 0 ? ScreenBridge.height : 480;
+						GLES20.glViewport(0, 0, w, h);
+						mFullScreenRect.drawFrame(mTextureId, mTmpMatrix);
+						mEncoderWindow.setPresentationTime(timestamp);
+						mEncoderWindow.swapBuffers();
+					} else {
+						// Log.v(TAG, "Dropping frame at EGL layer to prevent network bufferbloat");
+					}
+				}
             });
         }
 
@@ -460,56 +472,81 @@ public class DisplayMgr {
             }
         }
     }
-    private static MediaCodec createAndConfigureEncoder(int suggestedWidth, int suggestedHeight) {
-        try {
-            MediaCodecList codecList = new MediaCodecList(MediaCodecList.REGULAR_CODECS);
-            String encoderName = null;
-            for (MediaCodecInfo info : codecList.getCodecInfos()) {
-                if (!info.isEncoder()) continue;
-                for (String type : info.getSupportedTypes()) {
-                    if (type.equalsIgnoreCase(MediaFormat.MIMETYPE_VIDEO_AVC)) {
-                        encoderName = info.getName();
-                        break;
-                    }
-                }
-                if (encoderName != null) break;
-            }
-            if (encoderName == null) return null;
 
-            MediaCodec encoder = MediaCodec.createByCodecName(encoderName);
-            MediaCodecInfo.VideoCapabilities videoCaps = encoder.getCodecInfo().getCapabilitiesForType(MediaFormat.MIMETYPE_VIDEO_AVC).getVideoCapabilities();
+	private static MediaCodec createAndConfigureEncoder(int suggestedWidth, int suggestedHeight) {
+		try {
+		    MediaCodecList codecList = new MediaCodecList(MediaCodecList.REGULAR_CODECS);
+		    String encoderName = null;
+		    MediaCodecInfo selectedCodecInfo = null;
+		    
+		    for (MediaCodecInfo info : codecList.getCodecInfos()) {
+		        if (!info.isEncoder()) continue;
+		        for (String type : info.getSupportedTypes()) {
+		            if (type.equalsIgnoreCase(MediaFormat.MIMETYPE_VIDEO_AVC)) {
+		                encoderName = info.getName();
+		                selectedCodecInfo = info;
+		                break;
+		            }
+		        }
+		        if (encoderName != null) break;
+		    }
+		    if (encoderName == null || selectedCodecInfo == null) return null;
 
-            int width = videoCaps.getSupportedWidths().clamp(suggestedWidth);
-            int height = videoCaps.getSupportedHeightsFor(width).clamp(suggestedHeight);
-            width = Math.max(320, (width / 16) * 16);
-            height = Math.max(240, (height / 16) * 16);
+		    MediaCodec encoder = MediaCodec.createByCodecName(encoderName);
+		    MediaCodecInfo.CodecCapabilities capabilities = selectedCodecInfo.getCapabilitiesForType(MediaFormat.MIMETYPE_VIDEO_AVC);
+		    MediaCodecInfo.VideoCapabilities videoCaps = capabilities.getVideoCapabilities();
 
-            MediaFormat format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height);
-            format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-            format.setInteger(MediaFormat.KEY_BIT_RATE, Math.max(2000000, width * height * 3));
-            format.setInteger(MediaFormat.KEY_FRAME_RATE, 60);
-            format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
-            format.setLong(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER, 16666);
+		    int width = videoCaps.getSupportedWidths().clamp(suggestedWidth);
+		    int height = videoCaps.getSupportedHeightsFor(width).clamp(suggestedHeight);
+		    width = Math.max(320, (width / 16) * 16);
+		    height = Math.max(240, (height / 16) * 16);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) format.setInteger(MediaFormat.KEY_LATENCY, 0);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) format.setInteger(MediaFormat.KEY_LOW_LATENCY, 1);
+		    MediaFormat format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height);
+		    format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
+		    format.setInteger(MediaFormat.KEY_BIT_RATE, Math.max(2000000, width * height * 3));
+		    format.setInteger(MediaFormat.KEY_FRAME_RATE, 60);
+		    format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
+		    format.setLong(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER, 16666);
 
-            encoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-            Surface inputSurface = encoder.createInputSurface();
+		    // Dynamic Check: Only apply CBR if the SoC explicitly supports it
+		    MediaCodecInfo.EncoderCapabilities encoderCaps = capabilities.getEncoderCapabilities();
+			if (encoderCaps != null && encoderCaps.isBitrateModeSupported(MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR)) {
+				format.setInteger(MediaFormat.KEY_BITRATE_MODE, MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR);
+			} else {
+				Log.w(TAG, "CBR Bitrate mode unsupported by this hardware. Falling back to VBR.");
+				format.setInteger(MediaFormat.KEY_BITRATE_MODE, MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR);
+			}
 
-            if (mRenderThread != null) {
-                mRenderThread.updateEncoderSurface(inputSurface);
-            }
+		    // Low-latency configuration safeguards
+		    try {
+		        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+		            format.setInteger(MediaFormat.KEY_LATENCY, 0);
+		        }
+		        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+		            format.setInteger(MediaFormat.KEY_LOW_LATENCY, 1);
+		        }
+		        format.setInteger(MediaFormat.KEY_PRIORITY, 0); // Real-time priority
+		    } catch (Exception e) {
+		        Log.w(TAG, "Device rejected strict real-time tuning keys, stripping them out.");
+		    }
 
-            encoder.start();
-            return encoder;
-        } catch (Exception e) {
-            Log.e(TAG, "Unable to spin up independent MediaCodec pipeline configuration", e);
-            return null;
-        }
-    }
+		    encoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+		    Surface inputSurface = encoder.createInputSurface();
 
-    private static void startEncoderOutputLoop() {
+		    if (mRenderThread != null) {
+		        mRenderThread.updateEncoderSurface(inputSurface);
+		    }
+
+		    encoder.start();
+		    return encoder;
+		} catch (Exception e) {
+		    Log.e(TAG, "Unable to spin up independent MediaCodec pipeline configuration", e);
+		    return null;
+		}
+	}
+
+
+	private static void startEncoderOutputLoop() {
         new Thread(() -> {
             MediaCodec.BufferInfo buffer_info = new MediaCodec.BufferInfo();
             try {
@@ -534,13 +571,29 @@ public class DisplayMgr {
                                 if (networkOutputStream != null && isNetworkStreamingActive) {
                                     output_buffer.position(buffer_info.offset);
                                     output_buffer.limit(buffer_info.offset + buffer_info.size);
+                                    
+                                    // 1. Declare and allocate out_data FIRST
                                     byte[] out_data = new byte[buffer_info.size];
                                     output_buffer.get(out_data);
+                                    
                                     try {
+                                        // Track that we are attempting a network write
+                                        pendingNetworkWrites.incrementAndGet();
+                                        
+                                        // 2. Wrap metadata into a 16-byte header: [4-bytes Length][8-bytes PTS][4-bytes Flags]
+                                        ByteBuffer header = ByteBuffer.allocate(16);
+                                        header.putInt(out_data.length);
+                                        header.putLong(buffer_info.presentationTimeUs);
+                                        header.putInt(buffer_info.flags);
+                                        
+                                        // 3. Write the framing header, then write the raw video data frame payload
+                                        networkOutputStream.write(header.array());
                                         networkOutputStream.write(out_data, 0, out_data.length);
                                         networkOutputStream.flush();
                                     } catch (IOException netEx) {
                                         isNetworkStreamingActive = false;
+                                    } finally {
+                                        pendingNetworkWrites.decrementAndGet();
                                     }
                                 }
                             }
