@@ -31,10 +31,12 @@ import android.util.Log;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+
 
 public class NetworkStreamHub {
     private static final String TAG = "AAStreamDebug";
@@ -97,6 +99,8 @@ public class NetworkStreamHub {
                 }
                 
                 deviceIP = resolveHotspotGatewayIP();
+				Log.d(TAG, "Resolved hotspot IP = " + deviceIP);
+				Log.d(TAG, "isRunning = " + isRunning);
                 startServerSocket();
                 setupBluetoothGattServer();
             }
@@ -141,22 +145,35 @@ public class NetworkStreamHub {
     }
 
     private void startServerSocket() {
-        new Thread(() -> {
-            try {
-                serverSocket = new ServerSocket(PORT);
-                while (isRunning) {
-                    try {
-                        Socket clientSocket = serverSocket.accept();
-                        clientSocket.setTcpNoDelay(true); // Disable Nagle's algorithm for instant streaming chunks
-                        com.aastream.car.DisplayMgr.handleNetworkClient(clientSocket);
-                    } catch (IOException e) {
-                        if (!isRunning) break;
-                    }
-                }
-            } catch (IOException e) {
-                Log.e(TAG, "[SOCKET_EXCEPTION] Exception in socket context loop", e);
-            }
-        }, "AAStreamServerSocketThread").start();
+		new Thread(() -> {
+			try {
+				Log.d(TAG, "Creating ServerSocket...");
+
+				ServerSocket ss = new ServerSocket();
+
+				Log.d(TAG, "Created ServerSocket object.");
+
+				ss.setReuseAddress(true);
+
+				Log.d(TAG, "Binding to 0.0.0.0:" + PORT);
+
+				ss.bind(new InetSocketAddress("0.0.0.0", PORT));
+
+				Log.d(TAG, "Bind successful.");
+
+				serverSocket = ss;
+
+				while (isRunning) {
+				    Socket client = serverSocket.accept();
+				    Log.d(TAG, "Accepted client: " + client.getInetAddress());
+				    client.setTcpNoDelay(true);
+				    com.aastream.car.DisplayMgr.handleNetworkClient(client);
+				}
+
+			} catch (Throwable t) {
+				Log.e(TAG, "Server failed", t);
+			}
+		}).start();
     }
 
     @SuppressLint("MissingPermission")

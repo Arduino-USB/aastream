@@ -33,16 +33,16 @@ def join_wifi(ssid, password):
         raise RuntimeError("No Wi-Fi adapter found.")
     subprocess.run(["nmcli", "device", "wifi", "connect", ssid, "password", password], check=True)
 
+import time
+
 def render(ip):
     print(f"[*] Connecting to {ip}:{PORT}...")
     sock = None
     player_proc = None
     
-    # Configure ultra-low latency mpv parameters to pipe raw h264 without buffer lag
-    # Configure ultra-low latency mpv parameters to pipe raw h264 without buffer lag
     mpv_cmd = [
         "mpv",
-        "-",                     # Read from standard input pipe
+        "-",                         # Read from standard input pipe
         "--profile=low-latency",
         "--untimed",
         "--no-cache",
@@ -50,11 +50,26 @@ def render(ip):
         "--demuxer-lavf-o=probesize=32,analyzeduration=0",
         "--title=AAStream Live (H.264)"
     ]
+    
+    # Retry loop to wait for Android Auto to trigger onSurfaceAvailable
+    max_attempts = 30
+    attempt = 0
+    while attempt < max_attempts:
+        try:
+            # Short timeout per attempt to quickly cycle back if server isn't up yet
+            sock = socket.create_connection((ip, PORT), timeout=3)
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            print("[+] Connected! Initializing low-latency pipeline playback...")
+            break
+        except (socket.timeout, ConnectionRefusedError, OSError):
+            attempt += 1
+            print(f"[!] Android app not hosting stream yet (waiting for AA screen). Retrying ({attempt}/{max_attempts})...")
+            time.sleep(2)
+    else:
+        print("[-] Critical Error: Could not connect to the Android stream pipeline. Is Android Auto active?")
+        return
+
     try:
-        sock = socket.create_connection((ip, PORT), timeout=10)
-        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        print("[+] Connected. Initializing low-latency pipeline playback...")
-        
         # Spawn mpv process with stdin redirected to our pipe write loop
         player_proc = subprocess.Popen(mpv_cmd, stdin=subprocess.PIPE)
         
@@ -74,7 +89,7 @@ def render(ip):
                 break
                 
     except Exception as e:
-        print(f"[!] Error: {e}")
+        print(f"[!] Stream pipeline Error: {e}")
     finally:
         if sock:
             sock.close()

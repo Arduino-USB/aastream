@@ -38,6 +38,7 @@ import com.aastream.grafika.WindowSurface;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -68,6 +69,11 @@ public class DisplayMgr {
     private static MediaCodec videoEncoder = null;
     private static byte[] cachedSpsPpsHeaders = null;
 
+	// Networking Server Properties
+    private static ServerSocket mServerSocket = null;
+    private static Thread mServerThread = null;
+    private static final int PORT = 6741;
+
     public interface PlayerStateListener {
         void onPlaybackEnded();
         void onTracksChanged(List<String> audioTracks);
@@ -84,8 +90,13 @@ public class DisplayMgr {
     /**
      * Initializes and spawns the entire display architecture using precise AA surface specifications.
      */
-    public static synchronized void startPipeline(Context context, Surface aaSurface, int width, int height, int dpi) {
-        stopPipeline(); // Safeguard: Clean up any leaking pipelines first
+	public static synchronized void startPipeline(Context context, Surface aaSurface, int width, int height, int dpi) {
+        // Clean up any leaking graphics loops (keep network output stream context safe)
+        if (mRenderThread != null) {
+            mRenderThread.shutdown();
+            try { mRenderThread.join(500); } catch (InterruptedException ignored) {}
+            mRenderThread = null;
+        }
         
         cachedContext = context.getApplicationContext();
         
@@ -96,25 +107,53 @@ public class DisplayMgr {
         mRenderThread = new RenderThread(aaSurface, width, height, dpi);
         mRenderThread.start();
         mRenderThread.waitUntilReady();
+
+        // CROSS-CHECK: If a network stream client connected early while mRenderThread was null,
+        // spin up the encoder right now and bind it to the newly prepared EGL context.
+        synchronized (socketLock) {
+            if (isNetworkStreamingActive && networkOutputStream != null && videoEncoder == null) {
+                Log.i(TAG, "[DisplayMgr] Network client was waiting. Instantiating video encoder for new EGL window target.");
+                int targetWidth = ScreenBridge.width > 0 ? ScreenBridge.width : 800;
+                int targetHeight = ScreenBridge.height > 0 ? ScreenBridge.height : 480;
+                videoEncoder = createAndConfigureEncoder(targetWidth, targetHeight);
+                if (videoEncoder != null) {
+                    startEncoderOutputLoop();
+                }
+            }
+        }
     }
 
     /**
      * Completely shuts down, breaks down, and flushes every structural engine in the rendering pipeline.
      */
+/**
+     * Completely shuts down, breaks down, and flushes every structural engine in the rendering pipeline.
+     */
     public static synchronized void stopPipeline() {
-        // 1. Stop streaming engines and Media playback 
-        stopAllMediaEngines();
+        // Tear down encoder surface coupling safely
+        if (mRenderThread != null) {
+            mRenderThread.updateEncoderSurface(null);
+        }
+        if (videoEncoder != null) {
+            try { videoEncoder.stop(); } catch (Exception ignored) {}
+            try { videoEncoder.release(); } catch (Exception ignored) {}
+            videoEncoder = null;
+        }
 
-        // 2. Shut down the Rendering Loop and EGL instances
+        if (exoPlayer != null) { 
+            mainHandler.post(() -> { try { exoPlayer.stop(); exoPlayer.clearMediaItems(); } catch (Exception ignored) {} }); 
+        }
+
+        // Shut down the Rendering Loop and EGL instances
         if (mRenderThread != null) {
             mRenderThread.shutdown();
             try {
-                mRenderThread.join(1000);
+                mRenderThread.join(500);
             } catch (InterruptedException ignored) {}
             mRenderThread = null;
         }
 
-        // 3. Clear window presentation contexts safely on the Main Looper UI Thread
+        // Clear window presentation contexts safely on the Main Looper UI Thread
         mainHandler.post(() -> {
             if (mPresentation != null) {
                 try { mPresentation.dismiss(); } catch (Exception ignored) {}
@@ -386,7 +425,7 @@ public class DisplayMgr {
         });
     }
 
-    public static void handleNetworkClient(Socket clientSocket) {
+	public static void handleNetworkClient(Socket clientSocket) {
         synchronized (socketLock) {
             try {
                 Log.i(TAG, "[Network] Connecting client target directly to pipeline blit structure...");
@@ -396,22 +435,31 @@ public class DisplayMgr {
                 networkOutputStream = clientSocket.getOutputStream();
                 isNetworkStreamingActive = true;
 
-                int targetWidth = ScreenBridge.width > 0 ? ScreenBridge.width : 800;
-                int targetHeight = ScreenBridge.height > 0 ? ScreenBridge.height : 480;
+                // Only spin up the encoder if the EGL pipeline is ready to accept it.
+                // If mRenderThread is null, startPipeline() will call this later.
+                if (mRenderThread != null) {
+                    int targetWidth = ScreenBridge.width > 0 ? ScreenBridge.width : 800;
+                    int targetHeight = ScreenBridge.height > 0 ? ScreenBridge.height : 480;
 
-                videoEncoder = createAndConfigureEncoder(targetWidth, targetHeight);
-                if (videoEncoder == null) {
-                    isNetworkStreamingActive = false;
-                    return;
+                    if (videoEncoder != null) {
+                        try { videoEncoder.stop(); videoEncoder.release(); } catch (Exception ignored) {}
+                    }
+
+                    videoEncoder = createAndConfigureEncoder(targetWidth, targetHeight);
+                    if (videoEncoder == null) {
+                        isNetworkStreamingActive = false;
+                        return;
+                    }
+
+                    startEncoderOutputLoop();
+                } else {
+                    Log.w(TAG, "[Network] Client connected, but EGL RenderThread is idle. Postponing encoder activation until AA surface arrives.");
                 }
-
-                startEncoderOutputLoop();
             } catch (IOException e) {
                 Log.e(TAG, "Failed negotiating baseline network client sockets", e);
             }
         }
     }
-
     private static MediaCodec createAndConfigureEncoder(int suggestedWidth, int suggestedHeight) {
         try {
             MediaCodecList codecList = new MediaCodecList(MediaCodecList.REGULAR_CODECS);
