@@ -75,6 +75,7 @@ public class DisplayMgr {
     private static final int PORT = 6741;
 	
 	private static final java.util.concurrent.atomic.AtomicInteger pendingNetworkWrites = new java.util.concurrent.atomic.AtomicInteger(0);
+	private static final java.util.concurrent.atomic.AtomicInteger inFlightFrames = new java.util.concurrent.atomic.AtomicInteger(0);
 
     public interface PlayerStateListener {
         void onPlaybackEnded();
@@ -86,8 +87,8 @@ public class DisplayMgr {
     private DisplayMgr() {}
 	
 	public static boolean isNetworkBufferChoked() {
-		// If more than 2 frames are stuck waiting for the TCP socket layer, choke input
-		return pendingNetworkWrites.get() > 2;
+		// If the encoder + network thread has more than 2 frames in flight, drop the current frame
+		return inFlightFrames.get() > 2;
 	}
 
     public static void setPlayerStateListener(PlayerStateListener listener) {
@@ -348,7 +349,6 @@ public class DisplayMgr {
 
                 // 2. Mirror frame identically to MediaCodec Encoder Surface
 				if (mEncoderWindow != null && isNetworkStreamingActive) {
-					// Check custom threshold flag before encoding (see next section)
 					if (!isNetworkBufferChoked()) { 
 						mEncoderWindow.makeCurrent();
 						int w = ScreenBridge.width > 0 ? ScreenBridge.width : 800;
@@ -356,6 +356,9 @@ public class DisplayMgr {
 						GLES20.glViewport(0, 0, w, h);
 						mFullScreenRect.drawFrame(mTextureId, mTmpMatrix);
 						mEncoderWindow.setPresentationTime(timestamp);
+						
+						// Increment BEFORE swapping buffers to track the frame entry
+						inFlightFrames.incrementAndGet(); 
 						mEncoderWindow.swapBuffers();
 					} else {
 						// Log.v(TAG, "Dropping frame at EGL layer to prevent network bufferbloat");
@@ -578,7 +581,7 @@ public class DisplayMgr {
                                     
                                     try {
                                         // Track that we are attempting a network write
-                                        pendingNetworkWrites.incrementAndGet();
+                                        inFlightFrames.incrementAndGet();
                                         
                                         // 2. Wrap metadata into a 16-byte header: [4-bytes Length][8-bytes PTS][4-bytes Flags]
                                         ByteBuffer header = ByteBuffer.allocate(16);
@@ -593,7 +596,7 @@ public class DisplayMgr {
                                     } catch (IOException netEx) {
                                         isNetworkStreamingActive = false;
                                     } finally {
-                                        pendingNetworkWrites.decrementAndGet();
+                                        inFlightFrames.decrementAndGet();
                                     }
                                 }
                             }
